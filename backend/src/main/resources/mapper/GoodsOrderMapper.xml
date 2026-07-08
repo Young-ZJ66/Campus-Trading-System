@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.GoodsOrderMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO goods_order (order_no, buyer_id, seller_id, goods_id, amount, trade_type, exchange_goods_id, status, create_time)
+        VALUES (#{orderNo}, #{buyerId}, #{sellerId}, #{goodsId}, #{amount}, #{tradeType}, #{exchangeGoodsId}, #{status}, #{createTime})
+    </insert>
+
+    <select id="selectById" resultType="GoodsOrder">
+        SELECT o.*,
+               g.title as goodsTitle,
+               g.images as goodsImage,
+               g.status as goodsStatus,
+               eg.title as exchangeGoodsTitle,
+               eg.images as exchangeGoodsImage,
+               eg.status as exchangeGoodsStatus,
+               b.nickname as buyerName,
+               s.nickname as sellerName
+        FROM goods_order o
+        LEFT JOIN goods_info g ON o.goods_id = g.goods_id
+        LEFT JOIN goods_info eg ON o.exchange_goods_id = eg.goods_id
+        LEFT JOIN sys_user b ON o.buyer_id = b.user_id
+        LEFT JOIN sys_user s ON o.seller_id = s.user_id
+        WHERE o.order_id = #{orderId}
+    </select>
+
+    <select id="selectByUserId" resultType="GoodsOrder">
+        SELECT o.*,
+               g.title as goodsTitle,
+               g.images as goodsImage,
+               g.status as goodsStatus,
+               eg.title as exchangeGoodsTitle,
+               eg.images as exchangeGoodsImage,
+               eg.status as exchangeGoodsStatus,
+               b.nickname as buyerName,
+               s.nickname as sellerName
+        FROM goods_order o
+        LEFT JOIN goods_info g ON o.goods_id = g.goods_id
+        LEFT JOIN goods_info eg ON o.exchange_goods_id = eg.goods_id
+        LEFT JOIN sys_user b ON o.buyer_id = b.user_id
+        LEFT JOIN sys_user s ON o.seller_id = s.user_id
+        <where>
+            <if test="type == 'buy'">
+                o.buyer_id = #{userId}
+            </if>
+            <if test="type == 'sell'">
+                o.seller_id = #{userId}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="selectAdminList" resultType="GoodsOrder">
+        SELECT o.*,
+               g.title as goodsTitle,
+               g.images as goodsImage,
+               g.status as goodsStatus,
+               eg.title as exchangeGoodsTitle,
+               eg.images as exchangeGoodsImage,
+               eg.status as exchangeGoodsStatus,
+               b.nickname as buyerName,
+               s.nickname as sellerName
+        FROM goods_order o
+        LEFT JOIN goods_info g ON o.goods_id = g.goods_id
+        LEFT JOIN goods_info eg ON o.exchange_goods_id = eg.goods_id
+        LEFT JOIN sys_user b ON o.buyer_id = b.user_id
+        LEFT JOIN sys_user s ON o.seller_id = s.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    o.order_no LIKE CONCAT('%', #{keyword}, '%')
+                    OR g.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR eg.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR s.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.student_no LIKE CONCAT('%', #{keyword}, '%')
+                    OR s.student_no LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="tradeType != null">
+                AND o.trade_type = #{tradeType}
+            </if>
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminList" resultType="long">
+        SELECT COUNT(1)
+        FROM goods_order o
+        LEFT JOIN goods_info g ON o.goods_id = g.goods_id
+        LEFT JOIN goods_info eg ON o.exchange_goods_id = eg.goods_id
+        LEFT JOIN sys_user b ON o.buyer_id = b.user_id
+        LEFT JOIN sys_user s ON o.seller_id = s.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    o.order_no LIKE CONCAT('%', #{keyword}, '%')
+                    OR g.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR eg.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR s.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.student_no LIKE CONCAT('%', #{keyword}, '%')
+                    OR s.student_no LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="tradeType != null">
+                AND o.trade_type = #{tradeType}
+            </if>
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="countTodayNew" resultType="long">
+        SELECT COUNT(1) FROM goods_order WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="countCompletedTotal" resultType="long">
+        SELECT COUNT(1) FROM goods_order WHERE status = 2
+    </select>
+
+    <select id="countCompletedToday" resultType="long">
+        SELECT COUNT(1) FROM goods_order WHERE status = 2 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="sumGmvTotal" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0) FROM goods_order WHERE trade_type = 0 AND status = 2
+    </select>
+
+    <select id="sumGmvToday" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0) FROM goods_order WHERE trade_type = 0 AND status = 2 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="selectOrderTrend" resultType="com.campus.pojo.dto.AdminDashboardTrendDTO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+               COUNT(1) AS orderCount,
+               COALESCE(SUM(CASE WHEN trade_type = 0 AND status = 2 THEN amount ELSE 0 END), 0) AS gmv
+        FROM goods_order
+        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <update id="updateStatus">
+        UPDATE goods_order SET status = #{status} WHERE order_id = #{orderId}
+    </update>
+
+    <select id="selectPendingExchangeOrdersByGoodsId" resultType="GoodsOrder">
+        SELECT * FROM goods_order
+        WHERE trade_type = 1
+          AND status IN (0, 1)
+          AND (goods_id = #{goodsId} OR exchange_goods_id = #{goodsId})
+    </select>
+
+    <select id="selectPendingExchangeOrdersByGoodsIdExcludeOrderId" resultType="GoodsOrder">
+        SELECT * FROM goods_order
+        WHERE trade_type = 1
+          AND status IN (0, 1)
+          AND order_id != #{excludeOrderId}
+          AND (goods_id = #{goodsId} OR exchange_goods_id = #{goodsId})
+    </select>
+
+    <update id="cancelPendingExchangeOrdersByGoodsId">
+        UPDATE goods_order
+        SET status = 3
+        WHERE trade_type = 1
+          AND status IN (0, 1)
+          AND (goods_id = #{goodsId} OR exchange_goods_id = #{goodsId})
+    </update>
+
+    <update id="cancelPendingExchangeOrdersByGoodsIdExcludeOrderId">
+        UPDATE goods_order
+        SET status = 3
+        WHERE trade_type = 1
+          AND status IN (0, 1)
+          AND order_id != #{excludeOrderId}
+          AND (goods_id = #{goodsId} OR exchange_goods_id = #{goodsId})
+    </update>
+
+</mapper>

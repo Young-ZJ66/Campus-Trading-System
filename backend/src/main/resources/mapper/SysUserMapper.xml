@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.SysUserMapper">
+
+    <select id="selectByStudentNo" resultType="SysUser">
+        SELECT * FROM sys_user WHERE student_no = #{studentNo}
+    </select>
+
+    <select id="selectById" resultType="SysUser">
+        SELECT * FROM sys_user WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO sys_user (student_no, nickname, password, phone, avatar, points, status, create_time)
+        VALUES (#{studentNo}, #{nickname}, #{password}, #{phone}, #{avatar}, #{points}, #{status}, #{createTime})
+    </insert>
+
+    <select id="selectAdminList" resultType="SysUser">
+        SELECT *
+        FROM sys_user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (student_no LIKE CONCAT('%', #{keyword}, '%')
+                OR nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminList" resultType="long">
+        SELECT COUNT(1)
+        FROM sys_user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (student_no LIKE CONCAT('%', #{keyword}, '%')
+                OR nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateStatus">
+        UPDATE sys_user SET status = #{status} WHERE user_id = #{userId}
+    </update>
+
+    <update id="updatePoints">
+        UPDATE sys_user SET points = #{points} WHERE user_id = #{userId}
+    </update>
+
+    <select id="countTodayNew" resultType="long">
+        SELECT COUNT(1) FROM sys_user WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="selectDailyNewUsers" resultType="com.campus.pojo.dto.AdminDashboardTrendDTO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+               COUNT(1) AS newUsers
+        FROM sys_user
+        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+</mapper>

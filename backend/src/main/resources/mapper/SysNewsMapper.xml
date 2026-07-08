@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.SysNewsMapper">
+
+    <select id="selectList" resultType="SysNews">
+        SELECT news_id, title, cover_image, view_count, is_top, create_time 
+        FROM sys_news 
+        WHERE status = 1 
+        ORDER BY is_top DESC, create_time DESC 
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countList" resultType="long">
+        SELECT COUNT(1) FROM sys_news WHERE status = 1
+    </select>
+
+    <select id="selectById" resultType="SysNews">
+        SELECT * FROM sys_news WHERE news_id = #{newsId} AND status = 1
+    </select>
+
+    <update id="updateViewCount">
+        UPDATE sys_news SET view_count = view_count + 1 WHERE news_id = #{newsId}
+    </update>
+
+    <select id="selectAdminList" resultType="SysNews">
+        SELECT *
+        FROM sys_news
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="isTop != null">
+                AND is_top = #{isTop}
+            </if>
+        </where>
+        ORDER BY is_top DESC, create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminList" resultType="long">
+        SELECT COUNT(1)
+        FROM sys_news
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="isTop != null">
+                AND is_top = #{isTop}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="newsId">
+        INSERT INTO sys_news (title, cover_image, content, view_count, is_top, status, create_time)
+        VALUES (#{title}, #{coverImage}, #{content}, 0, #{isTop}, #{status}, NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE sys_news
+        SET title = #{title},
+            cover_image = #{coverImage},
+            content = #{content},
+            is_top = #{isTop},
+            status = #{status}
+        WHERE news_id = #{newsId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_news WHERE news_id = #{newsId}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE sys_news SET status = #{status} WHERE news_id = #{newsId}
+    </update>
+
+    <update id="updateTop">
+        UPDATE sys_news SET is_top = #{isTop} WHERE news_id = #{newsId}
+    </update>
+
+</mapper>

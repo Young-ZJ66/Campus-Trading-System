@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.GoodsCategoryMapper">
+
+    <select id="selectAllActive" resultType="GoodsCategory">
+        SELECT * FROM goods_category WHERE status = 1 ORDER BY sort ASC
+    </select>
+
+    <select id="selectAdminList" resultType="GoodsCategory">
+        SELECT *
+        FROM goods_category
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY sort ASC, category_id ASC
+    </select>
+
+    <select id="selectById" resultType="GoodsCategory">
+        SELECT * FROM goods_category WHERE category_id = #{categoryId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="categoryId">
+        INSERT INTO goods_category (name, parent_id, sort, status)
+        VALUES (#{name}, #{parentId}, #{sort}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE goods_category
+        SET name = #{name},
+            parent_id = #{parentId},
+            sort = #{sort},
+            status = #{status}
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE goods_category SET status = #{status} WHERE category_id = #{categoryId}
+    </update>
+
+</mapper>

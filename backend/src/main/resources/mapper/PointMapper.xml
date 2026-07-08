@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.PointMapper">
+
+    <select id="selectPointGoods" resultType="PointGoods">
+        SELECT * FROM point_goods WHERE status = 1 ORDER BY points_required ASC
+    </select>
+
+    <select id="selectPointGoodsById" resultType="PointGoods">
+        SELECT * FROM point_goods WHERE item_id = #{itemId}
+    </select>
+
+    <update id="updateStock">
+        UPDATE point_goods SET stock = stock - 1 WHERE item_id = #{itemId} AND stock > 0
+    </update>
+
+    <select id="selectAdminPointGoods" resultType="PointGoods">
+        SELECT *
+        FROM point_goods
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminPointGoods" resultType="long">
+        SELECT COUNT(1)
+        FROM point_goods
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertPointGoods" useGeneratedKeys="true" keyProperty="itemId">
+        INSERT INTO point_goods (name, description, image, points_required, stock, status, create_time)
+        VALUES (#{name}, #{description}, #{image}, #{pointsRequired}, #{stock}, #{status}, NOW())
+    </insert>
+
+    <update id="updatePointGoods">
+        UPDATE point_goods
+        SET name = #{name},
+            description = #{description},
+            image = #{image},
+            points_required = #{pointsRequired},
+            stock = #{stock},
+            status = #{status}
+        WHERE item_id = #{itemId}
+    </update>
+
+    <update id="updatePointGoodsStatus">
+        UPDATE point_goods SET status = #{status} WHERE item_id = #{itemId}
+    </update>
+
+    <update id="updatePointGoodsStock">
+        UPDATE point_goods SET stock = #{stock} WHERE item_id = #{itemId}
+    </update>
+
+    <update id="updateUserPoints">
+        UPDATE sys_user SET points = points + #{points} WHERE user_id = #{userId}
+    </update>
+
+    <insert id="insertRecord">
+        INSERT INTO point_record (user_id, change_type, change_amount, balance_after, create_time)
+        VALUES (#{userId}, #{changeType}, #{changeAmount}, #{balanceAfter}, #{createTime})
+    </insert>
+
+    <select id="selectRecordList" resultType="PointRecord">
+        SELECT * FROM point_record WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <select id="checkTodaySignIn" resultType="int">
+        SELECT COUNT(1) FROM point_record 
+        WHERE user_id = #{userId} AND change_type = 0 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="selectSignInDates" resultType="String">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') FROM point_record 
+        WHERE user_id = #{userId} AND change_type = 0 AND DATE_FORMAT(create_time, '%Y-%m') LIKE #{yearMonth}
+    </select>
+
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO point_order (order_no, user_id, item_id, points_used, status, create_time, update_time)
+        VALUES (#{orderNo}, #{userId}, #{itemId}, #{pointsUsed}, #{status}, NOW(), NOW())
+    </insert>
+
+    <select id="selectOrdersByUserId" resultType="PointOrder">
+        SELECT o.*, g.name AS itemName, g.image AS itemImage 
+        FROM point_order o
+        JOIN point_goods g ON o.item_id = g.item_id
+        WHERE o.user_id = #{userId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <update id="verifyOrder">
+        UPDATE point_order SET status = 1, update_time = NOW() WHERE order_id = #{orderId}
+    </update>
+
+    <select id="selectAdminOrders" resultType="PointOrder">
+        SELECT o.*,
+               g.name AS itemName,
+               g.image AS itemImage,
+               u.nickname AS userNickname,
+               u.student_no AS userStudentNo
+        FROM point_order o
+        JOIN point_goods g ON o.item_id = g.item_id
+        JOIN sys_user u ON o.user_id = u.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (o.order_no LIKE CONCAT('%', #{keyword}, '%') OR g.name LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%') OR u.student_no LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminOrders" resultType="long">
+        SELECT COUNT(1)
+        FROM point_order o
+        JOIN point_goods g ON o.item_id = g.item_id
+        JOIN sys_user u ON o.user_id = u.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (o.order_no LIKE CONCAT('%', #{keyword}, '%') OR g.name LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%') OR u.student_no LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="countTodayOrders" resultType="long">
+        SELECT COUNT(1) FROM point_order WHERE DATE(create_time) = CURDATE()
+    </select>
+
+</mapper>

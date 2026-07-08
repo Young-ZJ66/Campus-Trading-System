@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.campus.mapper.GoodsInfoMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="goodsId">
+        INSERT INTO goods_info (user_id, category_id, title, description, images, original_price, price, is_exchange, exchange_desc, status, view_count, create_time)
+        VALUES (#{userId}, #{categoryId}, #{title}, #{description}, #{images}, #{originalPrice}, #{price}, #{isExchange}, #{exchangeDesc}, #{status}, #{viewCount}, #{createTime})
+    </insert>
+
+    <sql id="queryConditions">
+        <where>
+            <if test="query.status != null and query.status != -1">
+                AND g.status = #{query.status}
+            </if>
+            <if test="query.status == null">
+                AND g.status = 0
+            </if>
+            <if test="query.userId != null">
+                AND g.user_id = #{query.userId}
+            </if>
+            <if test="query.categoryId != null">
+                AND g.category_id = #{query.categoryId}
+            </if>
+            <if test="query.isExchange != null and query.isExchange == 1">
+                AND g.is_exchange = 1
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (g.title LIKE CONCAT('%', #{query.keyword}, '%') OR g.description LIKE CONCAT('%', #{query.keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultType="GoodsInfo">
+        SELECT g.*, u.nickname AS publisherName, u.avatar AS publisherAvatar, c.name AS categoryName
+        FROM goods_info g
+        LEFT JOIN sys_user u ON g.user_id = u.user_id
+        LEFT JOIN goods_category c ON g.category_id = c.category_id
+        <include refid="queryConditions"/>
+        ORDER BY
+        <choose>
+            <when test="query.sortType == 1">g.price ASC, g.create_time DESC</when>
+            <when test="query.sortType == 2">g.view_count DESC, g.create_time DESC</when>
+            <otherwise>g.create_time DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countList" resultType="long">
+        SELECT COUNT(1) FROM goods_info g
+        <include refid="queryConditions"/>
+    </select>
+
+    <select id="countTodayNew" resultType="long">
+        SELECT COUNT(1) FROM goods_info WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="countOnSale" resultType="long">
+        SELECT COUNT(1) FROM goods_info WHERE status = 0
+    </select>
+
+    <select id="selectDailyNewGoods" resultType="com.campus.pojo.dto.AdminDashboardTrendDTO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+               COUNT(1) AS newGoods
+        FROM goods_info
+        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="selectById" resultType="GoodsInfo">
+        SELECT g.*, u.nickname AS publisherName, u.avatar AS publisherAvatar, c.name AS categoryName
+        FROM goods_info g
+        LEFT JOIN sys_user u ON g.user_id = u.user_id
+        LEFT JOIN goods_category c ON g.category_id = c.category_id
+        WHERE g.goods_id = #{goodsId}
+    </select>
+
+    <update id="updateViewCount">
+        UPDATE goods_info SET view_count = view_count + 1 WHERE goods_id = #{goodsId}
+    </update>
+
+</mapper>
