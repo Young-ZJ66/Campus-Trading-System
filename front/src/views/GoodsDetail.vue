@@ -159,7 +159,7 @@
           <el-col :span="8">
             <el-card class="safety-card">
               <template #header>
-                <div class="card-header" style="color: #ff6b81;">🛡️ 校园交易安全提示</div>
+                <div class="card-header" style="color: var(--color-primary);">🛡️ 校园交易安全提示</div>
               </template>
               <ul class="safety-list">
                 <li>本平台仅供本校师生交流使用。</li>
@@ -184,7 +184,7 @@
             :disabled="item.status !== 0"
           />
         </el-select>
-        <div style="margin-top: 10px; font-size: 12px; color: #909399;">
+        <div style="margin-top: 10px; font-size: 12px; color: var(--color-text-muted);">
           提示：只有处于"在售"状态的商品才能作为交换物。对方同意后，双方商品都会自动下架。
         </div>
         <template #footer>
@@ -277,7 +277,8 @@ const fetchGoodsDetail = async () => {
     goods.value = res
     if (res.images) {
       const imgs = JSON.parse(res.images)
-      imageList.value = imgs.map(img => img.startsWith('http') ? img : 'http://localhost:8080' + img)
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+      imageList.value = imgs.map(img => img.startsWith('http') ? img : baseURL + img)
       if (imageList.value.length > 0) {
         currentImage.value = imageList.value[0]
       }
@@ -395,7 +396,7 @@ const handleBuy = async (tradeType) => {
     return
   }
 
-  if (userStore.userInfo.studentNo === goods.value.publisherName || userStore.userInfo.nickname === goods.value.publisherName) {
+  if (userStore.userInfo.userId === goods.value.userId) {
     ElMessage.warning('不能购买或置换自己发布的商品')
     return
   }
@@ -438,8 +439,8 @@ const confirmCreateOrder = async (tradeType) => {
 <style scoped>
 .detail-container {
   min-height: 100vh;
-  background-color: #f0f4f8;
-  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family);
 }
 .el-main {
   padding: 20px 10% 60px;
@@ -456,8 +457,8 @@ const confirmCreateOrder = async (tradeType) => {
 .goods-info-row {
   background: #fff;
   padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   margin-bottom: 30px;
 }
 .img-preview {
@@ -469,7 +470,7 @@ const confirmCreateOrder = async (tradeType) => {
   width: 100%;
   height: 400px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 .thumb-list {
@@ -479,14 +480,14 @@ const confirmCreateOrder = async (tradeType) => {
 .thumb-item {
   width: 70px;
   height: 70px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   transition: all 0.3s;
 }
 .thumb-item.active {
-  border-color: #ff6b81;
+  border-color: var(--color-primary);
 }
 .thumb-item img {
   width: 100%;
@@ -500,7 +501,7 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .title {
   font-size: 24px;
-  color: #2c3e50;
+  color: var(--color-text-body);
   margin: 0 0 20px;
   line-height: 1.4;
 }
@@ -512,13 +513,13 @@ const confirmCreateOrder = async (tradeType) => {
   vertical-align: middle;
 }
 .price-box {
-  background: #fff0f2;
+  background: var(--color-primary-bg);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin-bottom: 25px;
 }
 .price-item {
-  color: #ff4757;
+  color: var(--color-primary-dark);
   margin-bottom: 5px;
 }
 .price-item .label {
@@ -534,7 +535,7 @@ const confirmCreateOrder = async (tradeType) => {
   font-weight: 800;
 }
 .original-price {
-  color: #909399;
+  color: var(--color-text-muted);
   text-decoration: line-through;
   font-size: 14px;
 }
@@ -549,7 +550,7 @@ const confirmCreateOrder = async (tradeType) => {
   font-size: 14px;
 }
 .meta-item .label {
-  color: #909399;
+  color: var(--color-text-muted);
   display: inline-block;
   width: 80px;
 }
@@ -560,8 +561,8 @@ const confirmCreateOrder = async (tradeType) => {
   display: flex;
   align-items: center;
   padding: 15px;
-  background: #f8f9fa;
-  border-radius: 12px;
+  background: var(--color-bg-input);
+  border-radius: var(--radius-md);
   margin-bottom: auto;
 }
 .seller-info .avatar {
@@ -596,9 +597,9 @@ const confirmCreateOrder = async (tradeType) => {
   letter-spacing: 2px;
 }
 .buy-btn {
-  background: linear-gradient(135deg, #ff9a9e, #ff6b81);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   border: none;
-  box-shadow: 0 4px 15px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 4px 15px var(--color-primary-shadow);
 }
 .exchange-btn {
   background: linear-gradient(135deg, #67c23a, #95d475);
@@ -610,14 +611,14 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .detail-card, .comment-card, .safety-card {
   border: none;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   margin-bottom: 30px;
 }
 .card-header {
   font-size: 16px;
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--color-text-body);
 }
 .desc-content {
   line-height: 1.8;
@@ -628,9 +629,9 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .comment-input-box {
   margin-bottom: 30px;
-  background: #f8f9fa;
+  background: var(--color-bg-input);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 .comment-actions {
   display: flex;
@@ -639,7 +640,7 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .reply-input-box {
   margin-top: 12px;
-  background: #f8f9fa;
+  background: var(--color-bg-input);
   padding: 12px;
   border-radius: 10px;
 }
@@ -670,11 +671,11 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .comment-meta .name {
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text-body);
   font-size: 14px;
 }
 .comment-meta .time {
-  color: #909399;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 .comment-text {

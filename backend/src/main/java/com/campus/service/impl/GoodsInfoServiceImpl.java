@@ -34,8 +34,10 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
 
     @Override
     public PageResult<GoodsInfo> getList(GoodsQueryDTO query) {
-        int offset = (query.getPageNum() - 1) * query.getPageSize();
-        List<GoodsInfo> list = goodsInfoMapper.selectList(query, offset, query.getPageSize());
+        int pageNum = query.getSafePageNum();
+        int pageSize = query.getSafePageSize();
+        int offset = (pageNum - 1) * pageSize;
+        List<GoodsInfo> list = goodsInfoMapper.selectList(query, offset, pageSize);
         long total = goodsInfoMapper.countList(query);
         return new PageResult<>(total, list);
     }
@@ -53,7 +55,7 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
     public void updateStatus(Long goodsId, Integer status, Long userId) {
         GoodsInfo goods = goodsInfoMapper.selectById(goodsId);
         if (goods == null || !goods.getUserId().equals(userId)) {
-            throw new RuntimeException("商品不存在或无权操作");
+            throw new GlobalException("商品不存在或无权操作");
         }
         goodsInfoMapper.updateStatus(goodsId, status);
     }
@@ -80,7 +82,7 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
     public void updateGoods(GoodsInfo goodsInfo, Long userId) {
         GoodsInfo goods = goodsInfoMapper.selectById(goodsInfo.getGoodsId());
         if (goods == null || !goods.getUserId().equals(userId)) {
-            throw new RuntimeException("商品不存在或无权操作");
+            throw new GlobalException("商品不存在或无权操作");
         }
         goodsInfoMapper.updateGoods(goodsInfo);
     }

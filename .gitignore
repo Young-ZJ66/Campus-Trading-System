@@ -67,7 +67,7 @@ application-test.properties
 .env.*.local
 
 ### Uploads ###
-backend/src/main/resources/uploads
+backend/uploads/
 
 ### OS ###
 .DS_Store
@@ -79,28 +79,28 @@ Thumbs.db
 
 ### Frontend ###
 # Logs
-frontend/logs
-frontend/*.log
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/pnpm-debug.log*
-frontend/lerna-debug.log*
+front/logs
+front/*.log
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+front/pnpm-debug.log*
+front/lerna-debug.log*
 
-frontend/node_modules
-frontend/dist
-frontend/dist-ssr
-frontend/*.local
+front/node_modules
+front/dist
+front/dist-ssr
+front/*.local
 
 # Editor directories and files
-frontend/.vscode/*
-!frontend/.vscode/extensions.json
-frontend/.idea
-frontend/*.suo
-frontend/*.ntvs*
-frontend/*.njsproj
-frontend/*.sln
-frontend/*.sw?
+front/.vscode/*
+!front/.vscode/extensions.json
+front/.idea
+front/*.suo
+front/*.ntvs*
+front/*.njsproj
+front/*.sln
+front/*.sw?
 
 ### Sanshu ###
 .sanshu-memory/

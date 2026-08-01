@@ -80,6 +80,7 @@ import request from '../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Navbar from '../components/Navbar.vue'
 import { Present } from '@element-plus/icons-vue'
+import { getCoverImage } from '../utils/image'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -169,12 +170,12 @@ const handleSignIn = async () => {
     ElMessage.success(`签到成功！获得 ${pointsEarned} 积分`)
     hasSignedInToday.value = true
     
-    // 更新本地缓存的用户信息
+    
     const userInfo = await request.get('/api/user/info')
     userStore.setUserInfo(userInfo)
     fetchSignInCalendar()
   } catch (error) {
-    // 错误提示已由 request 拦截器处理
+    
     console.error(error)
   } finally {
     signLoading.value = false
@@ -204,7 +205,7 @@ const handleExchange = (item) => {
       await request.post(`/api/point/exchange?itemId=${item.itemId}`)
       ElMessage.success('兑换成功！请留意系统通知或前往指定地点领取。')
       
-      // 更新积分和列表
+      
       const userInfo = await request.get('/api/user/info')
       userStore.setUserInfo(userInfo)
       fetchPointGoods()
@@ -214,11 +215,6 @@ const handleExchange = (item) => {
   }).catch(() => {})
 }
 
-const getCoverImage = (img) => {
-  if (!img) return ''
-  if (img.startsWith('http')) return img
-  return 'http://localhost:8080' + img
-}
 
 
 </script>
@@ -226,18 +222,18 @@ const getCoverImage = (img) => {
 <style scoped>
 .point-container {
   min-height: 100vh;
-  background-color: #f0f4f8;
-  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family);
 }
 .el-menu-item:hover {
-  color: #ff6b81 !important;
-  background-color: #fff0f2 !important;
+  color: var(--color-primary) !important;
+  background-color: var(--color-primary-bg) !important;
 }
 .el-main {
   padding: 0 0 50px 0;
 }
 .point-banner {
-  background: #f0f4f8;
+  background: var(--color-bg-page);
   padding: 20px 5%;
   margin-bottom: 20px;
   box-shadow: none;
@@ -255,7 +251,7 @@ const getCoverImage = (img) => {
 }
 .banner-title {
   font-size: 24px;
-  color: #2c3e50;
+  color: var(--color-text-body);
   margin: 0;
   font-weight: bold;
   position: absolute;
@@ -269,7 +265,7 @@ const getCoverImage = (img) => {
   background: #fff;
   padding: 8px 16px;
   border-radius: 30px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md);
   margin-left: auto;
 }
 .calendar-wrapper {
@@ -281,7 +277,7 @@ const getCoverImage = (img) => {
   text-align: center;
   font-weight: bold;
   margin-bottom: 10px;
-  color: #ff6b81;
+  color: var(--color-primary);
 }
 .week-header {
   display: grid;
@@ -340,7 +336,7 @@ const getCoverImage = (img) => {
   width: 100%;
   height: 240px;
   background: #f2f6fc;
-  color: #909399;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -352,10 +348,10 @@ const getCoverImage = (img) => {
   margin: 0 15px 0 5px;
 }
 .sign-btn {
-  background: linear-gradient(135deg, #ff9a9e, #ff6b81);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   border: none;
   font-weight: bold;
-  box-shadow: 0 4px 15px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 4px 15px var(--color-primary-shadow);
 }
 .goods-grid {
   display: grid;
@@ -364,15 +360,15 @@ const getCoverImage = (img) => {
   padding: 0 5%;
 }
 .goods-card {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   border: none;
   background: #fff;
 }
 .goods-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-xl);
 }
 .image-wrapper {
   overflow: hidden;
@@ -382,7 +378,7 @@ const getCoverImage = (img) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform var(--transition-smooth);
 }
 .goods-card:hover .image {
   transform: scale(1.05);
@@ -394,7 +390,7 @@ const getCoverImage = (img) => {
   margin: 0 0 10px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text-body);
 }
 .goods-desc {
   font-size: 13px;
@@ -431,11 +427,11 @@ const getCoverImage = (img) => {
   color: #a4b0be;
   background: #f1f2f6;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 .exchange-btn {
   width: 100%;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   font-weight: bold;
   background: #67c23a;
   border: none;

@@ -77,7 +77,7 @@
         </el-form-item>
         <el-form-item label="图片" prop="image">
           <el-upload
-            action="http://localhost:8080/api/file/upload"
+            :action="getUploadUrl()"
             :headers="uploadHeaders"
             list-type="picture-card"
             v-model:file-list="fileList"
@@ -137,6 +137,7 @@ import { Plus } from '@element-plus/icons-vue'
 import request from '../../utils/request'
 import { formatTime } from '../../utils/time'
 import { useUserStore } from '../../store/user'
+import { getUploadUrl, getCoverImage } from '../../utils/image'
 
 const userStore = useUserStore()
 
@@ -180,7 +181,7 @@ const resetQuery = () => {
 const getImageUrl = (image) => {
   if (!image) return ''
   if (String(image).startsWith('http')) return image
-  return 'http://localhost:8080' + image
+  return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + image
 }
 
 const dialogVisible = ref(false)

@@ -50,7 +50,6 @@ public class StpInterfaceImpl implements StpInterface {
                 }
             }
         } catch (NumberFormatException e) {
-            // 忽略异常
         }
         return roles;
     }

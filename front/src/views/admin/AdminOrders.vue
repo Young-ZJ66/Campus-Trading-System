@@ -221,12 +221,12 @@ const getCover = (imagesStr) => {
     const urls = JSON.parse(imagesStr)
     if (Array.isArray(urls) && urls.length > 0) {
       const u = urls[0]
-      return String(u).startsWith('http') ? u : 'http://localhost:8080' + u
+      return String(u).startsWith('http') ? u : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + u
     }
   } catch (e) {
   }
   if (String(imagesStr).startsWith('http')) return imagesStr
-  if (String(imagesStr).startsWith('/')) return 'http://localhost:8080' + imagesStr
+  if (String(imagesStr).startsWith('/')) return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + imagesStr
   return ''
 }
 

@@ -1,8 +1,7 @@
 package com.campus.service.impl;
 
+import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.secure.SaSecureUtil;
-import cn.hutool.crypto.SecureUtil;
 import com.campus.exception.GlobalException;
 import com.campus.mapper.SysUserMapper;
 import com.campus.pojo.LoginDTO;
@@ -29,9 +28,7 @@ public class SysUserServiceImpl implements SysUserService {
             throw new GlobalException("用户不存在");
         }
         
-        // 校验密码（前端传来的明文与数据库中加密的密码进行比对）
-        String encryptPassword = SaSecureUtil.md5(loginDTO.getPassword());
-        if (!user.getPassword().equals(encryptPassword)) {
+               if (!BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
             throw new GlobalException("密码错误");
         }
         if (user.getStatus() == 0) {
@@ -49,8 +46,7 @@ public class SysUserServiceImpl implements SysUserService {
             throw new GlobalException("该学号已被注册");
         }
         
-        // 密码加密存储
-        sysUser.setPassword(SaSecureUtil.md5(sysUser.getPassword()));
+               sysUser.setPassword(BCrypt.hashpw(sysUser.getPassword(), BCrypt.gensalt()));
         
         sysUser.setPoints(0);
         sysUser.setStatus(1);
@@ -82,19 +78,22 @@ public class SysUserServiceImpl implements SysUserService {
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
-        String oldMd5 = SecureUtil.md5(oldPassword);
-        if (!oldMd5.equals(user.getPassword())) {
+        
+               if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
             throw new GlobalException("原密码不正确");
         }
         
-        SysUser updateObj = new SysUser();
+               SysUser updateObj = new SysUser();
         updateObj.setUserId(userId);
-        updateObj.setPassword(SecureUtil.md5(newPassword));
+        updateObj.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         sysUserMapper.updateUser(updateObj);
     }
 
     @Override
     public PageResult<SysUser> getAdminUserList(int pageNum, int pageSize, String keyword, Integer status) {
+        // 分页参数边界校验，防止负数或超大值
+        pageNum = Math.max(1, pageNum);
+        pageSize = Math.min(100, Math.max(1, pageSize));
         int offset = (pageNum - 1) * pageSize;
         List<SysUser> list = sysUserMapper.selectAdminList(offset, pageSize, keyword, status);
         list.forEach(u -> u.setPassword(null));

@@ -85,17 +85,14 @@ defineOptions({
   name: 'Market'
 })
 import { ref, reactive, onMounted } from 'vue'
-import { useUserStore } from '../store/user'
 import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import request from '../utils/request'
-import { ElMessage } from 'element-plus'
 import Navbar from '../components/Navbar.vue'
+import { getCoverImage } from '../utils/image'
 
-const userStore = useUserStore()
 const router = useRouter()
 
-const activeIndex = ref('home')
 const categoryList = ref([])
 const goodsList = ref([])
 const total = ref(0)
@@ -143,34 +140,20 @@ const goToDetail = (id) => {
   router.push(`/goods/${id}`)
 }
 
-const getCoverImage = (imagesStr) => {
-  if (!imagesStr) return ''
-  try {
-    const images = JSON.parse(imagesStr)
-    if (images && images.length > 0) {
-      if (images[0].startsWith('http')) {
-        return images[0]
-      }
-      return 'http://localhost:8080' + images[0]
-    }
-  } catch (e) {}
-  return ''
-}
-
 
 </script>
 
 <style scoped>
 .home-container {
   min-height: 100vh;
-  background-color: #f8fafc;
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family);
 }
 
 .filter-section {
-  background: #ffffff;
+  background: var(--color-bg-card);
   padding: 20px 24px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   margin: 20px auto 30px;
   max-width: 1200px;
   box-sizing: border-box;
@@ -178,8 +161,8 @@ const getCoverImage = (imagesStr) => {
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border-light);
 }
 
 .search-input :deep(.el-input__wrapper) {
@@ -189,23 +172,23 @@ const getCoverImage = (imagesStr) => {
 }
 
 .search-input :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #ff6b81 inset;
+  box-shadow: 0 0 0 1px var(--color-primary) inset;
 }
 
 .search-input :deep(.el-input-group__append) {
-  border-radius: 0 24px 24px 0;
-  background-color: #ff6b81;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   box-shadow: none;
   padding: 0 24px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-fast);
 }
 
 .search-input :deep(.el-input-group__append):hover {
-  background-color: #ff4757;
+  background-color: var(--color-primary-dark);
 }
 
 .goods-grid {
@@ -219,42 +202,42 @@ const getCoverImage = (imagesStr) => {
 }
 
 .goods-card {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid #f1f5f9;
-  background: #ffffff;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
   box-shadow: none;
 }
 
 .goods-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
 }
 
 .image-wrapper {
   position: relative;
   overflow: hidden;
   height: 240px;
-  background-color: #f1f5f9;
+  background-color: var(--color-bg-hover);
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--transition-image);
 }
 
 .no-image {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  color: #64748b;
+  background: linear-gradient(135deg, var(--color-bg-hover) 0%, var(--color-border) 100%);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
 }
 
@@ -366,9 +349,9 @@ const getCoverImage = (imagesStr) => {
 }
 
 .goods-card:hover .view-btn {
-  background: #ff6b81;
+  background: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 129, 0.2);
+  box-shadow: 0 4px 12px var(--color-primary-shadow);
 }
 
 .pagination-container {
@@ -378,7 +361,7 @@ const getCoverImage = (imagesStr) => {
 }
 
 :deep(.el-pagination.is-background .el-pager li.is-active) {
-  background-color: #ff6b81 !important;
+  background-color: var(--color-primary) !important;
 }
 
 </style>

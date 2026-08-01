@@ -74,7 +74,7 @@
           <el-col :span="8">
             <el-card class="safety-card">
               <template #header>
-                <div class="card-header" style="color: #ff6b81; display: flex; align-items: center;">
+                <div class="card-header" style="color: var(--color-primary); display: flex; align-items: center;">
                   <el-icon style="margin-right: 6px; vertical-align: middle;"><Present /></el-icon>兑换须知
                 </div>
               </template>
@@ -121,7 +121,8 @@ const fetchDetail = async () => {
 const getCoverImage = (url) => {
   if (!url) return ''
   if (url.startsWith('http')) return url
-  return 'http://localhost:8080' + url
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  return baseURL + url
 }
 
 const goBack = () => {
@@ -151,11 +152,11 @@ const handleExchange = () => {
       await request.post(`/api/point/exchange?itemId=${goods.value.itemId}`)
       ElMessage.success('兑换成功！请在个人中心查看兑换订单')
       
-      // 更新本地缓存的用户信息
+      
       const userInfo = await request.get('/api/user/info')
       userStore.setUserInfo(userInfo)
       
-      // 刷新商品详情
+      
       fetchDetail()
       router.push('/user')
     } catch (error) {
@@ -258,7 +259,7 @@ const handleExchange = () => {
 }
 
 .price {
-  color: #ff6b81;
+  color: var(--color-primary);
   font-size: 36px;
   font-weight: 800;
 }

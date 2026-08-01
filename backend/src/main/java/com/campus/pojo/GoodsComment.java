@@ -12,8 +12,7 @@ public class GoodsComment {
     private Long parentId;
     private LocalDateTime createTime;
     
-    // 扩展字段
-    private String nickname;
+       private String nickname;
     private String avatar;
     private String parentNickname;
 }

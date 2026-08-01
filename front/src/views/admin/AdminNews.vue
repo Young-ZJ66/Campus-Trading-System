@@ -81,7 +81,7 @@
         </el-form-item>
         <el-form-item label="封面图" prop="coverImage">
           <el-upload
-            action="http://localhost:8080/api/file/upload"
+            :action="getUploadUrl()"
             :headers="uploadHeaders"
             list-type="picture-card"
             v-model:file-list="fileList"
@@ -123,6 +123,7 @@ import { Plus } from '@element-plus/icons-vue'
 import request from '../../utils/request'
 import { formatTime } from '../../utils/time'
 import { useUserStore } from '../../store/user'
+import { getUploadUrl, getCoverImage } from '../../utils/image'
 
 const userStore = useUserStore()
 
@@ -242,7 +243,7 @@ const openEdit = (row) => {
   if (form.coverImage) {
     fileList.value = [{
       name: form.coverImage,
-      url: form.coverImage.startsWith('http') ? form.coverImage : 'http://localhost:8080' + form.coverImage
+      url: form.coverImage.startsWith('http') ? form.coverImage : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + form.coverImage
     }]
   }
   dialogVisible.value = true

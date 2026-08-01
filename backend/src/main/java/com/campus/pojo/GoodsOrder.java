@@ -17,8 +17,7 @@ public class GoodsOrder {
     private Integer status; // 普通购买: 1-待收货, 2-已完成, 3-已取消; 以物换物: 0-待卖家同意, 1-已同意, 2-已完成, 3-已取消, 4-已拒绝
     private LocalDateTime createTime;
     
-    // 扩展字段
-    private String goodsTitle;
+       private String goodsTitle;
     private String goodsImage;
     private String exchangeGoodsTitle;
     private String exchangeGoodsImage;

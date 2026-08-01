@@ -27,7 +27,14 @@ public interface GoodsInfoMapper {
     void updateViewCount(@Param("goodsId") Long goodsId);
 
     @Update("UPDATE goods_info SET status = #{status} WHERE goods_id = #{goodsId}")
-    void updateStatus(@Param("goodsId") Long goodsId, @Param("status") Integer status);
+    int updateStatus(@Param("goodsId") Long goodsId, @Param("status") Integer status);
+
+    /**
+     * 乐观锁更新商品状态（CAS），仅当期望的旧状态匹配时才更新
+     * @return 影响行数，0表示状态已被其他线程修改
+     */
+    @Update("UPDATE goods_info SET status = #{newStatus} WHERE goods_id = #{goodsId} AND status = #{expectedStatus}")
+    int updateStatusCas(@Param("goodsId") Long goodsId, @Param("newStatus") Integer newStatus, @Param("expectedStatus") Integer expectedStatus);
 
     @Update("<script>" +
             "UPDATE goods_info " +

@@ -8,18 +8,17 @@ import com.campus.mapper.SysUserMapper;
 import com.campus.pojo.GoodsQueryDTO;
 import com.campus.pojo.dto.AdminDashboardStatsDTO;
 import com.campus.pojo.dto.AdminDashboardTrendDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.*;
 
-@Api(tags = "管理员-仪表盘")
+@Tag(name = "管理员-仪表盘")
 @RestController
 @RequestMapping("/api/admin/dashboard")
-@CrossOrigin
 public class AdminDashboardController {
 
     @Autowired
@@ -34,7 +33,7 @@ public class AdminDashboardController {
     @Autowired
     private PointMapper pointMapper;
 
-    @ApiOperation("统计数据")
+    @Operation(summary = "统计数据")
     @GetMapping("/stats")
     public Result<AdminDashboardStatsDTO> stats() {
         AdminDashboardStatsDTO dto = new AdminDashboardStatsDTO();
@@ -59,7 +58,7 @@ public class AdminDashboardController {
         return Result.success(dto);
     }
 
-    @ApiOperation("趋势数据（近N天）")
+    @Operation(summary = "趋势数据（近N天）")
     @GetMapping("/trend")
     public Result<List<AdminDashboardTrendDTO>> trend(@RequestParam(defaultValue = "7") Integer days) {
         if (days == null || days <= 0) {

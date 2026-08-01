@@ -53,6 +53,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../store/user'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { Plus, ArrowDown, SwitchButton, Goods, Coin } from '@element-plus/icons-vue'
+import request from '../utils/request'
 import PublishDialog from './PublishDialog.vue'
 
 const router = useRouter()
@@ -152,7 +153,7 @@ const handlePublishSuccess = () => {
 .logo {
   font-size: 24px;
   font-weight: 800;
-  color: #ff6b81;
+  color: var(--color-primary);
   letter-spacing: 1px;
   cursor: pointer;
   display: flex;
@@ -162,7 +163,7 @@ const handlePublishSuccess = () => {
 .logo-icon-svg {
   margin-right: 8px;
   font-size: 28px;
-  color: #ff6b81;
+  color: var(--color-primary);
 }
 
 .nav-menu {
@@ -184,8 +185,8 @@ const handlePublishSuccess = () => {
 }
 
 .nav-menu .el-menu-item.is-active {
-  color: #ff6b81 !important;
-  border-bottom: 3px solid #ff6b81 !important;
+  color: var(--color-primary) !important;
+  border-bottom: 3px solid var(--color-primary) !important;
   background-color: transparent !important;
 }
 
@@ -196,16 +197,16 @@ const handlePublishSuccess = () => {
 }
 
 .publish-btn {
-  background: linear-gradient(135deg, #ff9a9e, #ff6b81);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   border: none;
   font-weight: bold;
   padding: 8px 20px;
-  box-shadow: 0 4px 15px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 4px 15px var(--color-primary-shadow);
   transition: all 0.3s;
 }
 
 .publish-btn:hover {
-  background: linear-gradient(135deg, #ff8a8e, #ff5b71);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
   box-shadow: 0 6px 20px rgba(255, 107, 129, 0.4);
   transform: translateY(-1px);
 }
@@ -217,11 +218,11 @@ const handlePublishSuccess = () => {
 .login-text-btn {
   margin-left: 15px;
   font-size: 16px;
-  color: #2c3e50;
+  color: var(--color-text-body);
   font-weight: 500;
 }
 .login-text-btn:hover {
-  color: #ff6b81;
+  color: var(--color-primary);
 }
 
 .nickname {
@@ -233,7 +234,7 @@ const handlePublishSuccess = () => {
 }
 
 .nickname:hover {
-  color: #ff6b81;
+  color: var(--color-primary);
 }
 
 .point-item {

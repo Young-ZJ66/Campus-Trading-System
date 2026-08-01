@@ -94,6 +94,7 @@ import { ArrowRight, View, TrendCharts, Present, Coin } from '@element-plus/icon
 import request from '../utils/request'
 import Navbar from '../components/Navbar.vue'
 import { formatTime } from '../utils/time'
+import { getCoverImage } from '../utils/image'
 
 const router = useRouter()
 
@@ -130,7 +131,7 @@ const fetchHotGoods = async () => {
     const res = await request.post('/api/goods/list', {
       pageNum: 1,
       pageSize: 4,
-      sortType: 2 // 假设 2 为热度最高
+      sortType: 2 
     })
     hotGoodsList.value = res.list || []
   } catch (e) {
@@ -144,29 +145,13 @@ const fetchPointGoods = async () => {
   pointGoodsLoading.value = true
   try {
     const res = await request.get('/api/point/goods')
-    // 取前4个作为最新上架（假设接口返回已排序或直接截取）
+    
     pointGoodsList.value = (res || []).slice(0, 4)
   } catch (e) {
     console.error(e)
   } finally {
     pointGoodsLoading.value = false
   }
-}
-
-const getCoverImage = (imagesStr) => {
-  if (!imagesStr) return ''
-  if (typeof imagesStr !== 'string') return ''
-  if (imagesStr.startsWith('http')) return imagesStr
-  try {
-    const images = JSON.parse(imagesStr)
-    if (images && images.length > 0) {
-      if (images[0].startsWith('http')) return images[0]
-      return 'http://localhost:8080' + images[0]
-    }
-  } catch (e) {
-    if (imagesStr.startsWith('/')) return 'http://localhost:8080' + imagesStr
-  }
-  return ''
 }
 
 const goToNews = (id) => {
@@ -184,7 +169,7 @@ const goToPointGoods = (id) => {
 
 <style scoped>
 .home-main {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-page);
   padding: 30px 0;
   min-height: calc(100vh - 70px);
 }
@@ -192,9 +177,9 @@ const goToPointGoods = (id) => {
 .carousel-section {
   max-width: 1200px;
   margin: 0 auto 40px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-lg);
 }
 
 .carousel-item-content {
@@ -210,7 +195,7 @@ const goToPointGoods = (id) => {
   height: 100%;
   object-fit: cover;
   opacity: 0.85;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--transition-image);
 }
 
 .carousel-item-content:hover .carousel-image {
@@ -226,7 +211,7 @@ const goToPointGoods = (id) => {
   font-size: 32px;
   color: #fff;
   font-weight: 800;
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  background: linear-gradient(135deg, var(--color-border) 0%, #cbd5e1 100%);
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -270,7 +255,7 @@ const goToPointGoods = (id) => {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--color-text-heading);
   position: relative;
 }
 
@@ -281,7 +266,7 @@ const goToPointGoods = (id) => {
   left: 0;
   width: 40px;
   height: 4px;
-  background: linear-gradient(90deg, #ff6b81, #ff4757);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
   border-radius: 2px;
 }
 
@@ -292,11 +277,11 @@ const goToPointGoods = (id) => {
 }
 
 .goods-card {
-  border-radius: 16px;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: var(--radius-lg);
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
   cursor: pointer;
-  border: 1px solid #f1f5f9;
-  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -304,7 +289,7 @@ const goToPointGoods = (id) => {
 
 .goods-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
 }
 
 .image-wrapper {
@@ -328,12 +313,12 @@ const goToPointGoods = (id) => {
 .no-image {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  color: #64748b;
+  background: linear-gradient(135deg, var(--color-bg-hover) 0%, var(--color-border) 100%);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
 }
 
@@ -360,9 +345,9 @@ const goToPointGoods = (id) => {
 
 .goods-title {
   margin: 0 0 12px 0;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-heading);
   line-height: 1.5;
   height: 48px;
   overflow: hidden;
@@ -389,7 +374,7 @@ const goToPointGoods = (id) => {
 
 .title-icon {
   margin-right: 8px;
-  color: #ff6b81;
+  color: var(--color-primary);
   vertical-align: middle;
 }
 
@@ -404,8 +389,8 @@ const goToPointGoods = (id) => {
 }
 
 .view-count, .stock-count {
-  color: #64748b;
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
   gap: 4px;

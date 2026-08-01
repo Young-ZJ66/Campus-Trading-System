@@ -20,8 +20,7 @@ public class GoodsInfo {
     private Integer viewCount;
     private LocalDateTime createTime;
     
-    // 扩展字段用于前端展示
-    private String publisherName;
+       private String publisherName;
     private String publisherAvatar;
     private String categoryName;
 }

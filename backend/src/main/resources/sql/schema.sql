@@ -56,7 +56,8 @@ CREATE TABLE `goods_info` (
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   PRIMARY KEY (`goods_id`),
   KEY `idx_user_id` (`user_id`),
-  KEY `idx_category_id` (`category_id`)
+  KEY `idx_category_id` (`category_id`),
+  KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品信息表';
 
 -- 5. goods_order (交易订单表)
@@ -136,19 +137,20 @@ CREATE TABLE `point_order` (
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0-待核销, 1-已完成',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '兑换时间',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`order_id`)
+  PRIMARY KEY (`order_id`),
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分兑换订单表';
 
--- 初始化测试数据 (密码统设为123456，这里填入 123456 的 MD5 值 e10adc3949ba59abbe56e057f20f883e)
+-- 初始化测试数据 (密码统设为123456)
 INSERT INTO `sys_user` (`student_no`, `nickname`, `password`, `phone`, `points`) VALUES 
-('admin', '系统管理员', 'e10adc3949ba59abbe56e057f20f883e', '13800138000', 9999) /* 系统管理员 */,
-('20220001', '张三', 'e10adc3949ba59abbe56e057f20f883e', '13900139001', 150) /* 用户-张三 */,
-('20220002', '李四', 'e10adc3949ba59abbe56e057f20f883e', '13900139002', 300) /* 用户-李四 */,
-('20220003', '王五', 'e10adc3949ba59abbe56e057f20f883e', '13900139003', 50) /* 用户-王五 */,
-('20220004', '赵六', 'e10adc3949ba59abbe56e057f20f883e', '13900139004', 120) /* 用户-赵六 */,
-('20220005', '陈七', 'e10adc3949ba59abbe56e057f20f883e', '13900139005', 80) /* 用户-陈七 */,
-('20220006', '周八', 'e10adc3949ba59abbe56e057f20f883e', '13900139006', 200) /* 用户-周八 */,
-('20220007', '吴九', 'e10adc3949ba59abbe56e057f20f883e', '13900139007', 10) /* 用户-吴九 */;
+('admin', '系统管理员', '$2a$10$x4QdatbarahhwWT8OnqfJ.lBtmK9yVFC8TNVgyoss3tkD2FBmokmW', '13800138000', 9999) /* 系统管理员 */,
+('20220001', '张三', '$2a$10$VERIFi99u9UYY2EE1x1cauesvFlZyiVnZAq49PWM.keQqWWpzJCOm', '13900139001', 150) /* 用户-张三 */,
+('20220002', '李四', '$2a$10$ZAFn6DH/s7R97LQ2Q3uB9ebZRgwisabXGHPYnQYEoY5ylUcb4QbYm', '13900139002', 300) /* 用户-李四 */,
+('20220003', '王五', '$2a$10$15zDnjL6saIhLgqQlcMWcO8TpeMCAMH2EJow.jJ2TDT7LN3Gw.Ag6', '13900139003', 50) /* 用户-王五 */,
+('20220004', '赵六', '$2a$10$T5wdOCfvytTu5s9t3tmyeuk9rXFgkyKhA9XVV2FPW0Y.FN0yEDSLa', '13900139004', 120) /* 用户-赵六 */,
+('20220005', '陈七', '$2a$10$GZrCvnSsDL5G76a2QB5FQecW6FwGhlecmJo3BLgt4nstH5mZZ/ojS', '13900139005', 80) /* 用户-陈七 */,
+('20220006', '周八', '$2a$10$EFaJ9br/ZMkS7pYqcnLu/.JhKTLoY/KQ6zwyrJm0ti3uWS0kL2CW6', '13900139006', 200) /* 用户-周八 */,
+('20220007', '吴九', '$2a$10$jcmHJb5qwjFbO/LsiE/Y0.ZFUaG4Ii7tvAkanwGkH/fjShbbTTnIS', '13900139007', 10) /* 用户-吴九 */;
 
 INSERT INTO `goods_category` (`name`, `sort`) VALUES 
 ('教材教辅', 1) /* 分类-教材教辅 */,

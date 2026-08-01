@@ -5,37 +5,30 @@ import com.campus.common.Result;
 import com.campus.pojo.PointGoods;
 import com.campus.pojo.PointRecord;
 import com.campus.service.PointService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import com.campus.pojo.PointOrder;
-import com.campus.exception.GlobalException;
-import com.campus.mapper.SysUserMapper;
-import com.campus.pojo.SysUser;
 
-@Api(tags = "积分商城接口")
+@Tag(name = "积分商城接口")
 @RestController
 @RequestMapping("/api/point")
-@CrossOrigin
 public class PointController {
 
     @Autowired
     private PointService pointService;
 
-    @Autowired
-    private SysUserMapper sysUserMapper;
-
-    @ApiOperation("积分商品列表（用户端）")
+    @Operation(summary = "积分商品列表（用户端）")
     @GetMapping("/goods")
     public Result<List<PointGoods>> getPointGoods() {
         return Result.success(pointService.getPointGoodsList());
     }
 
-    @ApiOperation("每日签到")
+    @Operation(summary = "每日签到")
     @PostMapping("/signIn")
     public Result<Integer> signIn() {
         StpUtil.checkLogin();
@@ -44,7 +37,7 @@ public class PointController {
         return Result.success(points);
     }
 
-    @ApiOperation("检查今日是否签到")
+    @Operation(summary = "检查今日是否签到")
     @GetMapping("/checkSignIn")
     public Result<Boolean> checkSignIn() {
         if (!StpUtil.isLogin()) return Result.success(false);
@@ -52,7 +45,7 @@ public class PointController {
         return Result.success(pointService.checkTodaySignIn(userId));
     }
 
-    @ApiOperation("获取签到日期列表")
+    @Operation(summary = "获取签到日期列表")
     @GetMapping("/signInDates")
     public Result<List<String>> getSignInDates(@RequestParam("yearMonth") String yearMonth) {
         if (!StpUtil.isLogin()) return Result.success(null);
@@ -60,7 +53,7 @@ public class PointController {
         return Result.success(pointService.getSignInDates(userId, yearMonth));
     }
 
-    @ApiOperation("积分兑换下单")
+    @Operation(summary = "积分兑换下单")
     @PostMapping("/exchange")
     public Result<Void> exchange(@RequestParam Long itemId) {
         StpUtil.checkLogin();
@@ -69,7 +62,7 @@ public class PointController {
         return Result.success();
     }
 
-    @ApiOperation("积分明细")
+    @Operation(summary = "积分明细")
     @GetMapping("/records")
     public Result<List<PointRecord>> getRecords() {
         StpUtil.checkLogin();
@@ -77,13 +70,13 @@ public class PointController {
         return Result.success(pointService.getRecordList(userId));
     }
 
-    @ApiOperation("积分商品详情")
+    @Operation(summary = "积分商品详情")
     @GetMapping("/goods/{id}")
     public Result<PointGoods> getGoodsDetail(@PathVariable Long id) {
         return Result.success(pointService.getGoodsDetail(id));
     }
 
-    @ApiOperation("积分兑换订单列表（用户端）")
+    @Operation(summary = "积分兑换订单列表（用户端）")
     @GetMapping("/orders")
     public Result<List<PointOrder>> getOrders() {
         StpUtil.checkLogin();
@@ -91,15 +84,11 @@ public class PointController {
         return Result.success(pointService.getOrderList(userId));
     }
 
-    @ApiOperation("核销积分订单（管理员）")
+    @Operation(summary = "核销积分订单（管理员）")
     @PostMapping("/verifyOrder")
     public Result<Void> verifyOrder(@RequestParam Long orderId) {
-        StpUtil.checkLogin();
-        long userId = StpUtil.getLoginIdAsLong();
-        SysUser user = sysUserMapper.selectById(userId);
-        if (user == null || !"admin".equals(user.getStudentNo())) {
-            throw new GlobalException("无管理员权限");
-        }
+        // 通过 Sa-Token 角色鉴权，与 AdminAuthInterceptor 保持一致
+        StpUtil.checkRole("admin");
         pointService.verifyOrderByAdmin(orderId);
         return Result.success();
     }

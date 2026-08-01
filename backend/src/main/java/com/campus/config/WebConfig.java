@@ -3,11 +3,11 @@ package com.campus.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.io.File;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -15,12 +15,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Value("${campus.cors-origins:http://localhost:5173,http://localhost:3000}")
+    private String[] corsOrigins;
+
     @Autowired
     private AdminAuthInterceptor adminAuthInterceptor;
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 映射本地上传的文件夹到 /uploads/** 访问路径
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         String path = "file:" + uploadDir.replace("\\", "/");
         if (!path.endsWith("/")) {
             path += "/";
@@ -30,7 +32,19 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+    @SuppressWarnings("null")
+    public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(adminAuthInterceptor).addPathPatterns("/api/admin/**");
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins(corsOrigins)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

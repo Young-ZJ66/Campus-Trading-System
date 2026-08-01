@@ -38,8 +38,7 @@ public class PointServiceImpl implements PointService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int signIn(Long userId) {
-        // 检查今日是否已签到
-        if (pointMapper.checkTodaySignIn(userId) > 0) {
+               if (pointMapper.checkTodaySignIn(userId) > 0) {
             throw new GlobalException("今日已签到");
         }
         
@@ -85,17 +84,14 @@ public class PointServiceImpl implements PointService {
             throw new GlobalException("您的积分不足");
         }
 
-        // 扣减库存
-        int updateStock = pointMapper.updateStock(itemId);
+               int updateStock = pointMapper.updateStock(itemId);
         if (updateStock == 0) {
             throw new GlobalException("商品已被抢光");
         }
 
-        // 扣减积分
-        pointMapper.updateUserPoints(userId, -goods.getPointsRequired());
+               pointMapper.updateUserPoints(userId, -goods.getPointsRequired());
 
-        // 记录明细
-        PointRecord record = new PointRecord();
+               PointRecord record = new PointRecord();
         record.setUserId(userId);
         record.setChangeType(2); // 2-兑换消耗
         record.setChangeAmount(-goods.getPointsRequired());
@@ -103,8 +99,7 @@ public class PointServiceImpl implements PointService {
         record.setCreateTime(LocalDateTime.now());
         pointMapper.insertRecord(record);
 
-        // 生成订单
-        PointOrder order = new PointOrder();
+               PointOrder order = new PointOrder();
         order.setOrderNo("PT" + IdUtil.getSnowflakeNextIdStr());
         order.setUserId(userId);
         order.setItemId(itemId);
@@ -135,6 +130,9 @@ public class PointServiceImpl implements PointService {
 
     @Override
     public PageResult<PointGoods> getAdminGoodsList(int pageNum, int pageSize, String keyword, Integer status) {
+        // 分页参数边界校验
+        pageNum = Math.max(1, pageNum);
+        pageSize = Math.min(100, Math.max(1, pageSize));
         int offset = (pageNum - 1) * pageSize;
         List<PointGoods> list = pointMapper.selectAdminPointGoods(keyword, status, offset, pageSize);
         long total = pointMapper.countAdminPointGoods(keyword, status);
@@ -209,6 +207,9 @@ public class PointServiceImpl implements PointService {
 
     @Override
     public PageResult<PointOrder> getAdminOrders(int pageNum, int pageSize, String keyword, Integer status) {
+        // 分页参数边界校验
+        pageNum = Math.max(1, pageNum);
+        pageSize = Math.min(100, Math.max(1, pageSize));
         int offset = (pageNum - 1) * pageSize;
         List<PointOrder> list = pointMapper.selectAdminOrders(keyword, status, offset, pageSize);
         long total = pointMapper.countAdminOrders(keyword, status);

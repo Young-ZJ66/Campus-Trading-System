@@ -57,7 +57,7 @@
                 <el-table-column label="商品信息" min-width="160">
                   <template #default="scope">
                     <div>{{ scope.row.goodsTitle }}</div>
-                    <div v-if="scope.row.tradeType === 1 && scope.row.exchangeGoodsTitle" style="color: #909399; font-size: 12px; margin-top: 4px;">
+                    <div v-if="scope.row.tradeType === 1 && scope.row.exchangeGoodsTitle" style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px;">
                       交换物：{{ scope.row.exchangeGoodsTitle }}
                     </div>
                   </template>
@@ -313,6 +313,7 @@ import Navbar from '../components/Navbar.vue'
 import { Coin } from '@element-plus/icons-vue'
 import PublishDialog from '../components/PublishDialog.vue'
 import { formatTime } from '../utils/time'
+import { getCoverImage } from '../utils/image'
 
 const router = useRouter()
 const route = useRoute()
@@ -469,7 +470,7 @@ const saveProfile = async () => {
       password: profileForm.value.password || undefined
     })
     ElMessage.success('个人资料已更新')
-    // 更新全局 userStore
+    
     userStore.userInfo.nickname = profileForm.value.nickname
     userStore.userInfo.phone = profileForm.value.phone
     if (profileForm.value.password) {
@@ -633,10 +634,10 @@ const getOrderCoverImage = (imagesStr) => {
     const images = JSON.parse(imagesStr)
     if (images && images.length > 0) {
       if (images[0].startsWith('http')) return images[0]
-      return 'http://localhost:8080' + images[0]
+      return getCoverImage(imagesStr)
     }
   } catch (e) {
-    if (imagesStr.startsWith('/')) return 'http://localhost:8080' + imagesStr
+    if (imagesStr.startsWith('/')) return getCoverImage(imagesStr)
   }
   return ''
 }
@@ -716,12 +717,12 @@ const cancelOrderBySeller = (order) => {
 <style scoped>
 .user-center {
   min-height: 100vh;
-  background-color: #f0f4f8;
-  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family);
 }
 .el-menu-item:hover {
-  color: #ff6b81 !important;
-  background-color: #fff0f2 !important;
+  color: var(--color-primary) !important;
+  background-color: var(--color-primary-bg) !important;
 }
 .el-main {
   padding: 30px 5%;
@@ -729,7 +730,7 @@ const cancelOrderBySeller = (order) => {
 .side-menu {
   height: calc(100vh - 130px);
   background: #fff;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   padding: 10px 0;
   border-right: none;
@@ -796,26 +797,26 @@ const cancelOrderBySeller = (order) => {
   z-index: 5;
 }
 :deep(.el-card) {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 .card-header {
   font-size: 18px;
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--color-text-body);
   padding: 5px 0;
 }
 :deep(.el-table) {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: visible;
 }
 :deep(.el-table__inner-wrapper) {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 :deep(.el-table th.el-table__cell) {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-input);
   color: #444;
   font-weight: 600;
 }

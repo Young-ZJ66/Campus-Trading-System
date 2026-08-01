@@ -6,7 +6,7 @@
       <el-main>
         <div class="news-header">
           <h2>
-            <el-icon style="margin-right: 8px; vertical-align: middle; color: #2c3e50;"><Notification /></el-icon>最新校园资讯与公告
+            <el-icon style="margin-right: 8px; vertical-align: middle; color: var(--color-text-body);"><Notification /></el-icon>最新校园资讯与公告
           </h2>
           <p>了解校园新鲜事，防骗防欺指南</p>
         </div>
@@ -64,6 +64,7 @@ import { ElMessage } from 'element-plus'
 import Navbar from '../components/Navbar.vue'
 import { formatTime } from '../utils/time'
 import { Notification } from '@element-plus/icons-vue'
+import { getCoverImage } from '../utils/image'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -104,11 +105,6 @@ const openDetail = async (id) => {
   }
 }
 
-const getCoverImage = (img) => {
-  if (!img) return ''
-  if (img.startsWith('http')) return img
-  return 'http://localhost:8080' + img
-}
 
 
 </script>
@@ -116,12 +112,12 @@ const getCoverImage = (img) => {
 <style scoped>
 .news-container {
   min-height: 100vh;
-  background-color: #f0f4f8;
-  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family);
 }
 .el-menu-item:hover {
-  color: #ff6b81 !important;
-  background-color: #fff0f2 !important;
+  color: var(--color-primary) !important;
+  background-color: var(--color-primary-bg) !important;
 }
 .el-main {
   padding: 30px 10%;
@@ -131,7 +127,7 @@ const getCoverImage = (img) => {
   text-align: center;
 }
 .news-header h2 {
-  color: #2c3e50;
+  color: var(--color-text-body);
   margin-bottom: 10px;
 }
 .news-header p {
@@ -144,14 +140,14 @@ const getCoverImage = (img) => {
   gap: 20px;
 }
 .news-card {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   transition: all 0.3s;
 }
 .news-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-lg);
 }
 .news-content-wrapper {
   display: flex;
@@ -161,7 +157,7 @@ const getCoverImage = (img) => {
 .news-img {
   width: 140px;
   height: 90px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   margin-right: 20px;
   flex-shrink: 0;
@@ -184,7 +180,7 @@ const getCoverImage = (img) => {
   border-radius: 4px;
 }
 .news-meta {
-  color: #909399;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 .pagination-container {
@@ -193,10 +189,10 @@ const getCoverImage = (img) => {
   justify-content: center;
 }
 :deep(.el-pagination.is-background .el-pager li.is-active) {
-  background-color: #ff6b81 !important;
+  background-color: var(--color-primary) !important;
 }
 .dialog-meta {
-  color: #909399;
+  color: var(--color-text-muted);
   font-size: 14px;
   text-align: center;
 }

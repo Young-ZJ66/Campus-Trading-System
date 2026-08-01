@@ -65,7 +65,10 @@ const registerForm = reactive({
 const rules = reactive({
   studentNo: [{ required: true, message: '请输入学号', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 32, message: '密码长度必须在6-32位之间', trigger: 'blur' }
+  ]
 })
 
 const handleRegister = () => {
@@ -99,7 +102,7 @@ const resetForm = () => {
 
 <style scoped>
 .register-dialog {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 }
 .dialog-header {
   text-align: center;
@@ -107,14 +110,14 @@ const resetForm = () => {
 }
 .logo-icon-svg {
   font-size: 40px;
-  color: #ff6b81;
+  color: var(--color-primary);
   margin-bottom: 10px;
 }
 .title {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #2c3e50;
+  color: var(--color-text-body);
   letter-spacing: 1px;
 }
 .subtitle {
@@ -124,22 +127,22 @@ const resetForm = () => {
 }
 :deep(.el-input__wrapper) {
   padding: 8px 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 0 0 1px #e0e6ed inset;
 }
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #ff6b81 inset;
+  box-shadow: 0 0 0 1px var(--color-primary) inset;
 }
 .register-btn {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #ff9a9e, #ff6b81);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   border: none;
   font-size: 16px;
   font-weight: bold;
   letter-spacing: 2px;
-  box-shadow: 0 4px 15px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 4px 15px var(--color-primary-shadow);
   transition: all 0.3s;
 }
 .register-btn:hover {
@@ -153,7 +156,7 @@ const resetForm = () => {
   color: #7f8c8d;
 }
 .login-link a {
-  color: #ff6b81;
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: bold;
   margin-left: 5px;

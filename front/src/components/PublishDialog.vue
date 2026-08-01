@@ -1,8 +1,8 @@
 <template>
   <el-dialog v-model="visible" width="700px" destroy-on-close>
     <template #header>
-      <div style="display: flex; align-items: center; font-size: 18px; font-weight: bold; color: #2c3e50;">
-        <el-icon style="margin-right: 8px; color: #ff6b81;"><Plus v-if="!isEdit" /><Edit v-else /></el-icon>
+      <div style="display: flex; align-items: center; font-size: 18px; font-weight: bold; color: var(--color-text-body);">
+        <el-icon style="margin-right: 8px; color: var(--color-primary);"><Plus v-if="!isEdit" /><Edit v-else /></el-icon>
         {{ isEdit ? '编辑闲置物品' : '发布闲置物品' }}
       </div>
     </template>
@@ -19,7 +19,7 @@
 
       <el-form-item label="物品图片">
         <el-upload
-          action="http://localhost:8080/api/file/upload"
+          :action="uploadUrl"
           :headers="headers"
           list-type="picture-card"
           v-model:file-list="fileList"
@@ -72,11 +72,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { Plus, Edit } from '@element-plus/icons-vue'
 import { useUserStore } from '../store/user'
 import request from '../utils/request'
 import { ElMessage } from 'element-plus'
+import { getUploadUrl, getCoverImage } from '../utils/image'
 
 const visible = ref(false)
 const userStore = useUserStore()
@@ -86,9 +87,11 @@ const loading = ref(false)
 const categoryList = ref([])
 const imageUrls = ref([])
 
-const headers = {
+// 上传地址和请求头（响应式，token 变化时自动更新）
+const uploadUrl = getUploadUrl()
+const headers = computed(() => ({
   Authorization: userStore.token
-}
+}))
 
 const defaultForm = {
   title: '',
@@ -122,7 +125,7 @@ const open = async (goods = null) => {
       imageUrls.value = JSON.parse(goods.images)
       fileList.value = imageUrls.value.map(url => ({
         name: url,
-        url: url.startsWith('http') ? url : 'http://localhost:8080' + url
+        url: url.startsWith('http') ? url : getCoverImage(url)
       }))
     } catch (e) {
       imageUrls.value = []
@@ -162,7 +165,7 @@ const handleRemove = (uploadFile) => {
   if (uploadFile.response && uploadFile.response.data) {
     url = uploadFile.response.data
   } else {
-    url = uploadFile.name // Because we set name to the original url in open()
+    url = uploadFile.name
   }
   const index = imageUrls.value.indexOf(url)
   if (index !== -1) {
@@ -189,7 +192,7 @@ const submitForm = () => {
           ElMessage.success('发布成功')
         }
         visible.value = false
-        // 触发自定义事件，通知父组件刷新列表
+        
         emit('success')
       } catch (error) {
         console.error(error)
@@ -213,12 +216,12 @@ defineExpose({ open })
   color: #444;
 }
 .submit-btn {
-  background: linear-gradient(135deg, #ff9a9e, #ff6b81);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   border: none;
-  box-shadow: 0 4px 15px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 4px 15px var(--color-primary-shadow);
 }
 .submit-btn:hover {
-  background: linear-gradient(135deg, #ff8a8e, #ff5b71);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
   box-shadow: 0 6px 20px rgba(255, 107, 129, 0.4);
 }
 </style>

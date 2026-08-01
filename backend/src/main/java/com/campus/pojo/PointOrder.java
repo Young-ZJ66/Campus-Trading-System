@@ -14,8 +14,7 @@ public class PointOrder {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
-    // 关联字段
-    private String itemName;
+       private String itemName;
     private String itemImage;
     private String userNickname;
     private String userStudentNo;

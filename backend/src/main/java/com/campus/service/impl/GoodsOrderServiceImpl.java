@@ -2,7 +2,6 @@ package com.campus.service.impl;
 
 import com.campus.exception.GlobalException;
 import com.campus.mapper.GoodsInfoMapper;
-import com.campus.mapper.GoodsInfoUpdateMapper;
 import com.campus.mapper.GoodsOrderMapper;
 import com.campus.pojo.CreateOrderDTO;
 import com.campus.pojo.GoodsInfo;
@@ -36,9 +35,6 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
     private GoodsInfoMapper goodsInfoMapper;
     
     @Autowired
-    private GoodsInfoUpdateMapper goodsInfoUpdateMapper;
-    
-    @Autowired
     private PointMapper pointMapper;
     
     @Autowired
@@ -64,35 +60,38 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
         order.setCreateTime(LocalDateTime.now());
         
         if (dto.getTradeType() == TradeType.BARTER.getValue()) {
-            // 以物换物
-            if (targetGoods.getIsExchange() != 1) {
+                       if (targetGoods.getIsExchange() != 1) {
                 throw new GlobalException("该商品不支持换物");
             }
             if (dto.getExchangeGoodsId() == null) {
                 throw new GlobalException("请选择您用来交换的商品");
             }
             GoodsInfo myGoods = goodsInfoMapper.selectById(dto.getExchangeGoodsId());
-            if (myGoods == null || myGoods.getStatus() != GoodsStatus.ON_SALE.getValue() || !myGoods.getUserId().equals(userId)) {
+            if (myGoods == null || !myGoods.getUserId().equals(userId)) {
                 throw new GlobalException("您选择的交换商品无效");
+            }
+            // 乐观锁：仅当交换商品仍在售时才锁定
+            int casRows = goodsInfoMapper.updateStatusCas(myGoods.getGoodsId(), GoodsStatus.BARTER_PENDING.getValue(), GoodsStatus.ON_SALE.getValue());
+            if (casRows == 0) {
+                throw new GlobalException("交换商品状态已变更，请刷新后重试");
             }
             order.setAmount(BigDecimal.ZERO);
             order.setExchangeGoodsId(myGoods.getGoodsId());
             order.setStatus(OrderStatus.BARTER_PENDING.getValue()); // 0-待卖家同意
-            
-            // 锁定买家交换商品状态为置换锁定中 (3)
-            goodsInfoUpdateMapper.updateStatus(myGoods.getGoodsId(), GoodsStatus.BARTER_PENDING.getValue());
         } else {
-            // 普通购买
+            // 普通购买 - 乐观锁：仅当商品仍在售时才标记为已售出
+            int casRows = goodsInfoMapper.updateStatusCas(targetGoods.getGoodsId(), GoodsStatus.SOLD.getValue(), GoodsStatus.ON_SALE.getValue());
+            if (casRows == 0) {
+                throw new GlobalException("商品已被其他用户购买，请刷新后重试");
+            }
             order.setAmount(targetGoods.getPrice());
             order.setStatus(OrderStatus.WAIT_RECEIVE.getValue()); // 1-待收货
-            // 锁定商品状态
-            goodsInfoUpdateMapper.updateStatus(targetGoods.getGoodsId(), GoodsStatus.SOLD.getValue()); // 1-已售出
             
             // 级联取消其它与该商品关联的待同意订单，并且将那些订单对应的交换商品解锁回在售 (0)
             List<GoodsOrder> pendingExchangeOrders = goodsOrderMapper.selectPendingExchangeOrdersByGoodsId(targetGoods.getGoodsId());
             for (GoodsOrder pendingOrder : pendingExchangeOrders) {
                 if (pendingOrder.getExchangeGoodsId() != null) {
-                    goodsInfoUpdateMapper.updateStatus(pendingOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                    goodsInfoMapper.updateStatus(pendingOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                 }
             }
             goodsOrderMapper.cancelPendingExchangeOrdersByGoodsId(targetGoods.getGoodsId());
@@ -132,7 +131,7 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 if (targetUnavailable || exchangeUnavailable) {
                     goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
                     if (exchangeGoods != null && exchangeGoods.getStatus() == GoodsStatus.BARTER_PENDING.getValue()) {
-                        goodsInfoUpdateMapper.updateStatus(exchangeGoods.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(exchangeGoods.getGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                     String msg;
                     if (targetUnavailable && exchangeUnavailable) {
@@ -145,20 +144,20 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                     throw new GlobalException(msg);
                 }
                 goodsOrderMapper.updateStatus(orderId, OrderStatus.WAIT_RECEIVE.getValue());
-                goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.SOLD.getValue());
-                goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.SOLD.getValue());
+                goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.SOLD.getValue());
+                goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.SOLD.getValue());
                 
                 // 级联取消其它与这两个商品关联的待同意订单，并且把那些订单对应的交换商品解锁回在售 (0)
                 List<GoodsOrder> pendingExcludeGoods = goodsOrderMapper.selectPendingExchangeOrdersByGoodsIdExcludeOrderId(order.getGoodsId(), orderId);
                 for (GoodsOrder pOrder : pendingExcludeGoods) {
                     if (pOrder.getExchangeGoodsId() != null) {
-                        goodsInfoUpdateMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                 }
                 List<GoodsOrder> pendingExcludeExchange = goodsOrderMapper.selectPendingExchangeOrdersByGoodsIdExcludeOrderId(order.getExchangeGoodsId(), orderId);
                 for (GoodsOrder pOrder : pendingExcludeExchange) {
                     if (pOrder.getExchangeGoodsId() != null) {
-                        goodsInfoUpdateMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                 }
                 
@@ -166,13 +165,12 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 goodsOrderMapper.cancelPendingExchangeOrdersByGoodsIdExcludeOrderId(order.getExchangeGoodsId(), orderId);
             } else if (status == OrderStatus.CANCELLED.getValue() || status == OrderStatus.BARTER_REJECTED.getValue()) {
                 goodsOrderMapper.updateStatus(orderId, OrderStatus.BARTER_REJECTED.getValue());
-                goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
             } else {
                 throw new GlobalException("当前订单状态不支持此操作");
             }
         } else if (status == OrderStatus.COMPLETED.getValue()) {
-            // 买家确认收货完成订单
-            if (!order.getBuyerId().equals(userId)) {
+                       if (!order.getBuyerId().equals(userId)) {
                 throw new GlobalException("无权操作");
             }
             goodsOrderMapper.updateStatus(orderId, OrderStatus.COMPLETED.getValue());
@@ -209,7 +207,7 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 throw new GlobalException("商品状态异常，无法取消订单");
             }
             goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
-            goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+            goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
             return;
         }
         if (order.getTradeType() == TradeType.BARTER.getValue()) {
@@ -217,7 +215,7 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 throw new GlobalException("当前换物订单状态不支持取消");
             }
             goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
-            goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+            goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
             return;
         }
         throw new GlobalException("不支持的订单类型");
@@ -245,7 +243,7 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 throw new GlobalException("商品状态异常，无法取消订单");
             }
             goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
-            goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+            goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
             return;
         }
         if (order.getTradeType() == TradeType.BARTER.getValue()) {
@@ -255,13 +253,13 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
             Integer prevStatus = order.getStatus();
             goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
             if (prevStatus == OrderStatus.BARTER_PENDING.getValue()) {
-                goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
             } else if (prevStatus == OrderStatus.WAIT_RECEIVE.getValue()) {
                 if (order.getGoodsId() != null) {
-                    goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+                    goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
                 }
                 if (order.getExchangeGoodsId() != null) {
-                    goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                    goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                 }
             }
             return;
@@ -307,6 +305,9 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
 
     @Override
     public PageResult<GoodsOrder> getAdminOrderList(int pageNum, int pageSize, String keyword, Integer tradeType, Integer status) {
+        // 分页参数边界校验
+        pageNum = Math.max(1, pageNum);
+        pageSize = Math.min(100, Math.max(1, pageSize));
         int offset = (pageNum - 1) * pageSize;
         List<GoodsOrder> list = goodsOrderMapper.selectAdminList(offset, pageSize, keyword, tradeType, status);
         long total = goodsOrderMapper.countAdminList(keyword, tradeType, status);
@@ -334,7 +335,7 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 throw new GlobalException("当前订单状态不支持取消");
             }
             goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
-            goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+            goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
             return;
         }
         if (order.getTradeType() == TradeType.BARTER.getValue()) {
@@ -349,16 +350,16 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
             }
             if (order.getStatus() == OrderStatus.BARTER_PENDING.getValue()) {
                 goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
-                goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                 return;
             }
             if (order.getStatus() == OrderStatus.WAIT_RECEIVE.getValue()) {
                 goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
                 if (order.getGoodsId() != null) {
-                    goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+                    goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.ON_SALE.getValue());
                 }
                 if (order.getExchangeGoodsId() != null) {
-                    goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                    goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                 }
                 return;
             }
@@ -403,23 +404,23 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 if (targetUnavailable || exchangeUnavailable) {
                     goodsOrderMapper.updateStatus(orderId, OrderStatus.CANCELLED.getValue());
                     if (exchangeGoods != null && exchangeGoods.getStatus() == GoodsStatus.BARTER_PENDING.getValue()) {
-                        goodsInfoUpdateMapper.updateStatus(exchangeGoods.getGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(exchangeGoods.getGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                     throw new GlobalException("换物商品状态异常，订单已取消");
                 }
-                goodsInfoUpdateMapper.updateStatus(order.getGoodsId(), GoodsStatus.SOLD.getValue());
-                goodsInfoUpdateMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.SOLD.getValue());
+                goodsInfoMapper.updateStatus(order.getGoodsId(), GoodsStatus.SOLD.getValue());
+                goodsInfoMapper.updateStatus(order.getExchangeGoodsId(), GoodsStatus.SOLD.getValue());
                 
                 List<GoodsOrder> pendingExcludeGoods = goodsOrderMapper.selectPendingExchangeOrdersByGoodsIdExcludeOrderId(order.getGoodsId(), orderId);
                 for (GoodsOrder pOrder : pendingExcludeGoods) {
                     if (pOrder.getExchangeGoodsId() != null) {
-                        goodsInfoUpdateMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                 }
                 List<GoodsOrder> pendingExcludeExchange = goodsOrderMapper.selectPendingExchangeOrdersByGoodsIdExcludeOrderId(order.getExchangeGoodsId(), orderId);
                 for (GoodsOrder pOrder : pendingExcludeExchange) {
                     if (pOrder.getExchangeGoodsId() != null) {
-                        goodsInfoUpdateMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
+                        goodsInfoMapper.updateStatus(pOrder.getExchangeGoodsId(), GoodsStatus.ON_SALE.getValue());
                     }
                 }
                 
