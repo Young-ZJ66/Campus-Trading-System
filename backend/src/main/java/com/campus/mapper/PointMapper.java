@@ -27,6 +27,8 @@ public interface PointMapper {
     int updatePointGoodsStock(@Param("itemId") Long itemId, @Param("stock") Integer stock);
     
        int updateUserPoints(@Param("userId") Long userId, @Param("points") Integer points);
+
+    int deductUserPoints(@Param("userId") Long userId, @Param("points") Integer points);
     int insertRecord(PointRecord record);
     List<PointRecord> selectRecordList(@Param("userId") Long userId);
     

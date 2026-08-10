@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,7 +62,7 @@ public class FileController {
             throw new GlobalException("文件内容类型不合法");
         }
 
-               String newFilename = UUID.randomUUID().toString().replaceAll("-", "") + suffix;
+        String newFilename = UUID.randomUUID().toString().replaceAll("-", "") + suffix;
 
         File dir = new File(uploadDir);
         if (!dir.exists()) {
@@ -68,12 +70,47 @@ public class FileController {
         }
 
         try {
-            file.transferTo(new File(dir, newFilename));
+            byte[] bytes = file.getBytes();
+            if (!isImage(bytes)) {
+                throw new GlobalException("文件内容不是有效图片");
+            }
+            Files.write(Paths.get(dir.getAbsolutePath(), newFilename), bytes);
             String url = "/uploads/" + newFilename;
             return Result.success(url);
         } catch (IOException e) {
             log.error("文件上传失败", e);
             throw new GlobalException("文件上传失败");
         }
+    }
+
+    /**
+     * 通过文件头魔数校验真实图片类型，防止伪造扩展名/Content-Type
+     */
+    private boolean isImage(byte[] bytes) {
+        if (bytes == null || bytes.length < 4) {
+            return false;
+        }
+        // PNG: 89 50 4E 47
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 'P' && bytes[2] == 'N' && bytes[3] == 'G') {
+            return true;
+        }
+        // JPEG: FF D8 FF
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8 && (bytes[2] & 0xFF) == 0xFF) {
+            return true;
+        }
+        // GIF: 47 49 46 38
+        if (bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == '8') {
+            return true;
+        }
+        // BMP: 42 4D
+        if (bytes[0] == 'B' && bytes[1] == 'M') {
+            return true;
+        }
+        // WebP: RIFF .... WEBP (offset 8)
+        if (bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+                && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P') {
+            return true;
+        }
+        return false;
     }
 }

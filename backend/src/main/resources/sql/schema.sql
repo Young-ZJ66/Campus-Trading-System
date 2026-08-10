@@ -76,7 +76,8 @@ CREATE TABLE `goods_order` (
   UNIQUE KEY `uk_order_no` (`order_no`),
   KEY `idx_buyer_id` (`buyer_id`),
   KEY `idx_seller_id` (`seller_id`),
-  KEY `idx_goods_id` (`goods_id`)
+  KEY `idx_goods_id` (`goods_id`),
+  KEY `idx_exchange_goods_id` (`exchange_goods_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='交易订单表';
 
 -- 6. goods_comment (留言表)

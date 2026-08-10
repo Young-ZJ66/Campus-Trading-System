@@ -70,6 +70,10 @@
         UPDATE sys_user SET points = points + #{points} WHERE user_id = #{userId}
     </update>
 
+    <update id="deductUserPoints">
+        UPDATE sys_user SET points = points - #{points} WHERE user_id = #{userId} AND points >= #{points}
+    </update>
+
     <insert id="insertRecord">
         INSERT INTO point_record (user_id, change_type, change_amount, balance_after, create_time)
         VALUES (#{userId}, #{changeType}, #{changeAmount}, #{balanceAfter}, #{createTime})

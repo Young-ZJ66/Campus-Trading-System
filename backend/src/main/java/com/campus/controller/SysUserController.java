@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.campus.common.Result;
 import com.campus.pojo.LoginDTO;
 import com.campus.pojo.SysUser;
+import com.campus.pojo.dto.RegisterDTO;
 import com.campus.service.SysUserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,12 @@ public class SysUserController {
 
     @Operation(summary = "用户注册")
     @PostMapping("/register")
-    public Result<Void> register(@RequestBody SysUser sysUser) {
+    public Result<Void> register(@Valid @RequestBody RegisterDTO dto) {
+        SysUser sysUser = new SysUser();
+        sysUser.setStudentNo(dto.getStudentNo());
+        sysUser.setNickname(dto.getNickname());
+        sysUser.setPassword(dto.getPassword());
+        sysUser.setPhone(dto.getPhone());
         sysUserService.register(sysUser);
         return Result.success();
     }

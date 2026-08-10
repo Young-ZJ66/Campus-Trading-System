@@ -4,6 +4,7 @@ import com.campus.exception.GlobalException;
 import com.campus.mapper.GoodsInfoMapper;
 import com.campus.pojo.GoodsInfo;
 import com.campus.pojo.GoodsQueryDTO;
+import com.campus.pojo.GoodsStatus;
 import com.campus.pojo.PageResult;
 import com.campus.service.GoodsInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,19 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
         if (goods == null || !goods.getUserId().equals(userId)) {
             throw new GlobalException("商品不存在或无权操作");
         }
-        goodsInfoMapper.updateStatus(goodsId, status);
+        if (!Objects.equals(status, GoodsStatus.ON_SALE.getValue()) && !Objects.equals(status, GoodsStatus.OFF_SHELF.getValue())) {
+            throw new GlobalException("状态值错误");
+        }
+        if (Objects.equals(goods.getStatus(), GoodsStatus.SOLD.getValue())) {
+            throw new GlobalException("已售出商品不可修改状态");
+        }
+        if (Objects.equals(goods.getStatus(), GoodsStatus.BARTER_PENDING.getValue())) {
+            throw new GlobalException("置换锁定中商品不可修改状态");
+        }
+        int rows = goodsInfoMapper.updateStatusCas(goodsId, status, goods.getStatus());
+        if (rows == 0) {
+            throw new GlobalException("商品状态已变更，请刷新后重试");
+        }
     }
 
     @Override
@@ -75,7 +88,10 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
         if (Objects.equals(goods.getStatus(), 1)) {
             throw new GlobalException("已售出商品不可修改状态");
         }
-        goodsInfoMapper.updateStatus(goodsId, status);
+        int rows = goodsInfoMapper.updateStatusCas(goodsId, status, goods.getStatus());
+        if (rows == 0) {
+            throw new GlobalException("商品状态已变更，请刷新后重试");
+        }
     }
 
     @Override

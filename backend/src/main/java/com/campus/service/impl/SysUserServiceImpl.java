@@ -2,6 +2,7 @@ package com.campus.service.impl;
 
 import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.StpUtil;
+import com.campus.common.LoginAttemptLimiter;
 import com.campus.exception.GlobalException;
 import com.campus.mapper.SysUserMapper;
 import com.campus.pojo.LoginDTO;
@@ -21,16 +22,22 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private SysUserMapper sysUserMapper;
 
+    @Autowired
+    private LoginAttemptLimiter loginAttemptLimiter;
+
     @Override
     public String login(LoginDTO loginDTO) {
+        loginAttemptLimiter.checkAllowed(loginDTO.getStudentNo());
         SysUser user = sysUserMapper.selectByStudentNo(loginDTO.getStudentNo());
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
         
                if (!BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
+            loginAttemptLimiter.recordFailure(loginDTO.getStudentNo());
             throw new GlobalException("密码错误");
         }
+        loginAttemptLimiter.recordSuccess(loginDTO.getStudentNo());
         if (user.getStatus() == 0) {
             throw new GlobalException("账号已被禁用");
         }

@@ -151,6 +151,10 @@
         UPDATE goods_order SET status = #{status} WHERE order_id = #{orderId}
     </update>
 
+    <update id="updateStatusCas">
+        UPDATE goods_order SET status = #{newStatus} WHERE order_id = #{orderId} AND status = #{expectedStatus}
+    </update>
+
     <select id="selectPendingExchangeOrdersByGoodsId" resultType="GoodsOrder">
         SELECT * FROM goods_order
         WHERE trade_type = 1

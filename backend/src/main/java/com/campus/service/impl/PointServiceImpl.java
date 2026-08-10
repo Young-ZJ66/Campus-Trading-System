@@ -79,27 +79,36 @@ public class PointServiceImpl implements PointService {
             throw new GlobalException("库存不足");
         }
 
-        SysUser user = sysUserMapper.selectById(userId);
+SysUser user = sysUserMapper.selectById(userId);
+        if (user == null) {
+            throw new GlobalException("用户不存在");
+        }
         if (user.getPoints() < goods.getPointsRequired()) {
             throw new GlobalException("您的积分不足");
         }
 
-               int updateStock = pointMapper.updateStock(itemId);
+        int updateStock = pointMapper.updateStock(itemId);
         if (updateStock == 0) {
             throw new GlobalException("商品已被抢光");
         }
 
-               pointMapper.updateUserPoints(userId, -goods.getPointsRequired());
+        // 原子扣减积分，防止并发超扣导致负余额
+        int deductRows = pointMapper.deductUserPoints(userId, goods.getPointsRequired());
+        if (deductRows == 0) {
+            throw new GlobalException("您的积分不足");
+        }
 
-               PointRecord record = new PointRecord();
+        SysUser freshUser = sysUserMapper.selectById(userId);
+
+        PointRecord record = new PointRecord();
         record.setUserId(userId);
         record.setChangeType(2); // 2-兑换消耗
         record.setChangeAmount(-goods.getPointsRequired());
-        record.setBalanceAfter(user.getPoints() - goods.getPointsRequired());
+        record.setBalanceAfter(freshUser.getPoints());
         record.setCreateTime(LocalDateTime.now());
         pointMapper.insertRecord(record);
 
-               PointOrder order = new PointOrder();
+        PointOrder order = new PointOrder();
         order.setOrderNo("PT" + IdUtil.getSnowflakeNextIdStr());
         order.setUserId(userId);
         order.setItemId(itemId);

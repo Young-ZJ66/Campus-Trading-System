@@ -16,6 +16,8 @@ public interface GoodsOrderMapper {
     
     int updateStatus(@Param("orderId") Long orderId, @Param("status") Integer status);
 
+    int updateStatusCas(@Param("orderId") Long orderId, @Param("newStatus") Integer newStatus, @Param("expectedStatus") Integer expectedStatus);
+
     List<GoodsOrder> selectPendingExchangeOrdersByGoodsId(@Param("goodsId") Long goodsId);
 
     List<GoodsOrder> selectPendingExchangeOrdersByGoodsIdExcludeOrderId(@Param("goodsId") Long goodsId, @Param("excludeOrderId") Long excludeOrderId);
