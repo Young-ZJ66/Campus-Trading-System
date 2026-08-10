@@ -25,19 +25,20 @@
 - **安全鉴权**：Sa-Token 1.37.0+
 - **密码加密**：BCrypt（Sa-Token 内置）
 - **参数校验**：JSR-303 Bean Validation（spring-boot-starter-validation）
-- **API 文档**：springdoc-openapi 3（Swagger UI）
+- **API 文档**：Knife4j 4.5（OpenAPI 3）
 - **数据库**：MySQL 8.0+
 - **连接池**：HikariCP
 
 ### 前端 (Frontend)
 
 - **核心框架**：Vue 3 (Composition API)
-- **构建工具**：Vite 5.x
+- **构建工具**：Vite 8.x
 - **状态管理**：Pinia
-- **路由控制**：Vue Router 4.x
+- **路由控制**：Vue Router 5.x
 - **UI 组件库**：Element Plus
-- **网络请求**：Axios
 - **图标系统**：@element-plus/icons-vue
+- **图表库**：ECharts 6
+- **网络请求**：Axios
 - **设计令牌**：CSS Custom Properties（全局变量体系）
 
 ---
@@ -50,7 +51,7 @@
 
 - **JDK 17** 及以上
 - **MySQL 8.0** 及以上
-- **Node.js 18** 及以上 (建议使用 npm 或 pnpm)
+- **Node.js 20.19+ / 22.12+** (建议使用 npm)
 
 ### 2. 后端部署 (`backend`)
 
@@ -67,7 +68,8 @@
        username: 您的MySQL用户名
        password: 您的MySQL密码
    ```
-4. 运行 `com.campus.CampusApplication` 主类即可启动后端，默认服务端口为 `8080`。
+4. 运行 `com.campus.CampusTradingApplication` 主类即可启动后端，默认服务端口为 `8080`。
+    注意：图片上传目录基于 `${user.dir}/uploads/`，请确保在 `backend` 目录下启动后端，否则图片上传与访问路径会错位。
 5. API 文档地址：启动后访问 `http://localhost:8080/doc.html`
 
 ### 3. 前端部署 (`front`)
@@ -115,7 +117,7 @@
 ```text
 ├── backend                         # 后端 Spring Boot 工程
 │   ├── src/main/java/com/campus/
-│   │   ├── common/                 # 通用工具（Result 封装等）
+│   │   ├── common/                 # 通用工具（Result 封装、登录限流等）
 │   │   ├── config/                 # 配置类（WebConfig、拦截器、Sa-Token）
 │   │   ├── controller/             # 控制器（用户端 + 管理端）
 │   │   ├── exception/              # 全局异常处理
