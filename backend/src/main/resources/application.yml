@@ -2,7 +2,6 @@ server:
   port: 8080
 
 campus:
-  admin-student-no: admin
   # 允许跨域的前端地址，多个用逗号分隔
   cors-origins: http://localhost:5173,http://localhost:3000
 
@@ -35,5 +34,6 @@ sa-token:
   token-style: uuid
   is-log: false
 
-file:
-  upload-dir: ${user.dir}/uploads/
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) %clr([%thread]){faint} %clr(%logger{36}){cyan} %clr(:){faint} %msg%n"
