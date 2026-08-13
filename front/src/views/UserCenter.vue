@@ -466,20 +466,12 @@ const saveProfile = async () => {
   try {
     await request.post('/api/user/update', {
       nickname: profileForm.value.nickname,
-      phone: profileForm.value.phone,
-      password: profileForm.value.password || undefined
+      phone: profileForm.value.phone
     })
     ElMessage.success('个人资料已更新')
-    
+
     userStore.userInfo.nickname = profileForm.value.nickname
     userStore.userInfo.phone = profileForm.value.phone
-    if (profileForm.value.password) {
-      profileForm.value.password = ''
-      ElMessage.success('密码已修改，请重新登录')
-      userStore.clearToken()
-      userStore.showLoginDialog = true
-      router.push('/')
-    }
   } catch (error) {
     console.error(error)
   } finally {

@@ -110,7 +110,7 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   if (to.path.startsWith('/admin')) {
     if (to.path === '/admin/login') {
-      if (userStore.adminToken && userStore.adminInfo?.studentNo === 'admin') {
+      if (userStore.adminToken && userStore.adminInfo?.role === 1) {
         return next('/admin')
       }
       return next()
@@ -118,7 +118,7 @@ router.beforeEach((to, from, next) => {
     if (!userStore.adminToken) {
       return next('/admin/login')
     }
-    if (userStore.adminInfo?.studentNo !== 'admin') {
+    if (userStore.adminInfo?.role !== 1) {
       return next('/')
     }
     return next()

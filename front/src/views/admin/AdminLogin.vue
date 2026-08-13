@@ -52,7 +52,7 @@ const handleLogin = () => {
       const data = await request.post('/api/user/login', form)
       userStore.setAdminToken(data.token)
       const adminInfo = await request.get('/api/user/info')
-      if (adminInfo?.studentNo !== 'admin') {
+      if (adminInfo?.role !== 1) {
         userStore.clearAdminToken()
         ElMessage.error('无管理员权限')
         return
@@ -69,7 +69,7 @@ const handleLogin = () => {
 }
 
 onMounted(() => {
-  if (userStore.adminToken && userStore.adminInfo?.studentNo === 'admin') {
+  if (userStore.adminToken && userStore.adminInfo?.role === 1) {
     router.replace('/admin')
   }
 })

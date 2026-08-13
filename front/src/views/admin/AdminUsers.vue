@@ -39,7 +39,7 @@
           <template #default="scope">
             <div class="op-grid">
               <el-button size="small" class="op-btn" @click="openPoints(scope.row)">改积分</el-button>
-              <el-button size="small" class="op-btn" :disabled="scope.row.studentNo === 'admin'" :type="scope.row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(scope.row)">
+              <el-button size="small" class="op-btn" :disabled="scope.row.role === 1" :type="scope.row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(scope.row)">
                 {{ scope.row.status === 1 ? '禁用' : '启用' }}
               </el-button>
             </div>
