@@ -52,6 +52,12 @@
 			<version>5.8.25</version>
 		</dependency>
 
+		<!-- Caffeine 本地缓存（登录限流） -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+
 		<!-- Knife4j OpenAPI 3 文档（doc.html） -->
 		<dependency>
 			<groupId>com.github.xiaoymin</groupId>

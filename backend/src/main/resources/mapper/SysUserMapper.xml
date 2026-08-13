@@ -10,9 +10,13 @@
         SELECT * FROM sys_user WHERE user_id = #{userId}
     </select>
 
+    <select id="selectByIdForUpdate" resultType="SysUser">
+        SELECT * FROM sys_user WHERE user_id = #{userId} FOR UPDATE
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO sys_user (student_no, nickname, password, phone, avatar, points, status, create_time)
-        VALUES (#{studentNo}, #{nickname}, #{password}, #{phone}, #{avatar}, #{points}, #{status}, #{createTime})
+        INSERT INTO sys_user (student_no, nickname, password, phone, avatar, points, status, role, create_time)
+        VALUES (#{studentNo}, #{nickname}, #{password}, #{phone}, #{avatar}, #{points}, #{status}, #{role}, #{createTime})
     </insert>
 
     <select id="selectAdminList" resultType="SysUser">

@@ -3,11 +3,13 @@ package com.campus.service.impl;
 import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.StpUtil;
 import com.campus.common.LoginAttemptLimiter;
+import com.campus.common.PageQuery;
 import com.campus.exception.GlobalException;
 import com.campus.mapper.SysUserMapper;
 import com.campus.pojo.LoginDTO;
 import com.campus.pojo.PageResult;
 import com.campus.pojo.SysUser;
+import com.campus.pojo.dto.UpdateUserDTO;
 import com.campus.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,8 +34,8 @@ public class SysUserServiceImpl implements SysUserService {
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
-        
-               if (!BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
+
+        if (!BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
             loginAttemptLimiter.recordFailure(loginDTO.getStudentNo());
             throw new GlobalException("密码错误");
         }
@@ -41,7 +43,7 @@ public class SysUserServiceImpl implements SysUserService {
         if (user.getStatus() == 0) {
             throw new GlobalException("账号已被禁用");
         }
-        
+
         StpUtil.login(user.getUserId());
         return StpUtil.getTokenValue();
     }
@@ -52,16 +54,17 @@ public class SysUserServiceImpl implements SysUserService {
         if (existUser != null) {
             throw new GlobalException("该学号已被注册");
         }
-        
-               sysUser.setPassword(BCrypt.hashpw(sysUser.getPassword(), BCrypt.gensalt()));
-        
+
+        sysUser.setPassword(BCrypt.hashpw(sysUser.getPassword(), BCrypt.gensalt()));
+
         sysUser.setPoints(0);
         sysUser.setStatus(1);
+        sysUser.setRole(0); // 注册用户默认为普通用户，防止越权注册管理员
         sysUser.setCreateTime(LocalDateTime.now());
         if (sysUser.getNickname() == null || sysUser.getNickname().isEmpty()) {
             sysUser.setNickname("用户_" + sysUser.getStudentNo());
         }
-        
+
         sysUserMapper.insert(sysUser);
     }
 
@@ -75,8 +78,13 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public void updateUser(SysUser sysUser) {
-        sysUserMapper.updateUser(sysUser);
+    public void updateUser(Long userId, UpdateUserDTO dto) {
+        SysUser updateObj = new SysUser();
+        updateObj.setUserId(userId);
+        updateObj.setNickname(dto.getNickname());
+        updateObj.setPhone(dto.getPhone());
+        updateObj.setAvatar(dto.getAvatar());
+        sysUserMapper.updateUser(updateObj);
     }
 
     @Override
@@ -85,12 +93,12 @@ public class SysUserServiceImpl implements SysUserService {
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
-        
-               if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
+
+        if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
             throw new GlobalException("原密码不正确");
         }
-        
-               SysUser updateObj = new SysUser();
+
+        SysUser updateObj = new SysUser();
         updateObj.setUserId(userId);
         updateObj.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         sysUserMapper.updateUser(updateObj);
@@ -98,11 +106,10 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public PageResult<SysUser> getAdminUserList(int pageNum, int pageSize, String keyword, Integer status) {
-        // 分页参数边界校验，防止负数或超大值
-        pageNum = Math.max(1, pageNum);
-        pageSize = Math.min(100, Math.max(1, pageSize));
-        int offset = (pageNum - 1) * pageSize;
-        List<SysUser> list = sysUserMapper.selectAdminList(offset, pageSize, keyword, status);
+        int page = PageQuery.normalizePageNum(pageNum);
+        int size = PageQuery.normalizePageSize(pageSize);
+        int offset = PageQuery.offset(page, size);
+        List<SysUser> list = sysUserMapper.selectAdminList(offset, size, keyword, status);
         list.forEach(u -> u.setPassword(null));
         long total = sysUserMapper.countAdminList(keyword, status);
         return new PageResult<>(total, list);
@@ -120,7 +127,7 @@ public class SysUserServiceImpl implements SysUserService {
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
-        if ("admin".equals(user.getStudentNo())) {
+        if (isAdminRole(user)) {
             throw new GlobalException("不可修改管理员状态");
         }
         sysUserMapper.updateStatus(userId, status);
@@ -138,9 +145,16 @@ public class SysUserServiceImpl implements SysUserService {
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
-        if ("admin".equals(user.getStudentNo())) {
+        if (isAdminRole(user)) {
             throw new GlobalException("不可修改管理员积分");
         }
         sysUserMapper.updatePoints(userId, points);
+    }
+
+    /**
+     * 基于 role 字段判断是否为管理员
+     */
+    private boolean isAdminRole(SysUser user) {
+        return Objects.equals(user.getRole(), 1);
     }
 }

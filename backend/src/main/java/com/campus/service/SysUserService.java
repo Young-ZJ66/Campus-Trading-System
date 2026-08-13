@@ -3,6 +3,7 @@ package com.campus.service;
 import com.campus.pojo.LoginDTO;
 import com.campus.pojo.PageResult;
 import com.campus.pojo.SysUser;
+import com.campus.pojo.dto.UpdateUserDTO;
 
 public interface SysUserService {
     String login(LoginDTO loginDTO);
@@ -10,7 +11,7 @@ public interface SysUserService {
 
     SysUser getUserInfo(Long userId);
     
-    void updateUser(SysUser sysUser);
+    void updateUser(Long userId, UpdateUserDTO dto);
 
     void updatePassword(Long userId, String oldPassword, String newPassword);
 

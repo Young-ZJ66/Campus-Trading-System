@@ -13,5 +13,6 @@ public class SysUser {
     private String avatar;
     private Integer points;
     private Integer status;
+    private Integer role; // 0-普通用户, 1-管理员
     private LocalDateTime createTime;
 }

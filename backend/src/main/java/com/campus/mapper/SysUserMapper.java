@@ -15,6 +15,11 @@ public interface SysUserMapper {
     
     SysUser selectById(@Param("userId") Long userId);
 
+    /**
+     * 事务内锁行读取用户，避免并发积分变动导致 balance_after 不准
+     */
+    SysUser selectByIdForUpdate(@Param("userId") Long userId);
+
     List<SysUser> selectAdminList(@Param("offset") int offset, @Param("limit") int limit, @Param("keyword") String keyword, @Param("status") Integer status);
 
     long countAdminList(@Param("keyword") String keyword, @Param("status") Integer status);

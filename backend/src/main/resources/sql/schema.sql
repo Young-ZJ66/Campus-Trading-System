@@ -11,6 +11,7 @@ CREATE TABLE `sys_user` (
   `avatar` VARCHAR(500) DEFAULT NULL COMMENT '头像',
   `points` INT NOT NULL DEFAULT 0 COMMENT '积分余额',
   `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0-禁用, 1-正常)',
+  `role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色(0-普通用户, 1-管理员)',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `uk_student_no` (`student_no`)
@@ -124,8 +125,10 @@ CREATE TABLE `point_record` (
   `change_amount` INT NOT NULL COMMENT '变动积分数(+或-)',
   `balance_after` INT NOT NULL COMMENT '变动后余额',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
+  `signin_date` DATE GENERATED ALWAYS AS (IF(`change_type` = 0, DATE(`create_time`), NULL)) STORED COMMENT '签到日期(仅签到记录,用于防重复)',
   PRIMARY KEY (`record_id`),
-  KEY `idx_user_id` (`user_id`)
+  KEY `idx_user_id` (`user_id`),
+  UNIQUE KEY `uk_user_signin` (`user_id`, `signin_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分明细表';
 
 -- 10. point_order (积分兑换订单表)
@@ -143,15 +146,15 @@ CREATE TABLE `point_order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分兑换订单表';
 
 -- 初始化测试数据 (密码统设为123456)
-INSERT INTO `sys_user` (`student_no`, `nickname`, `password`, `phone`, `points`) VALUES 
-('admin', '系统管理员', '$2a$10$x4QdatbarahhwWT8OnqfJ.lBtmK9yVFC8TNVgyoss3tkD2FBmokmW', '13800138000', 9999) /* 系统管理员 */,
-('20220001', '张三', '$2a$10$VERIFi99u9UYY2EE1x1cauesvFlZyiVnZAq49PWM.keQqWWpzJCOm', '13900139001', 150) /* 用户-张三 */,
-('20220002', '李四', '$2a$10$ZAFn6DH/s7R97LQ2Q3uB9ebZRgwisabXGHPYnQYEoY5ylUcb4QbYm', '13900139002', 300) /* 用户-李四 */,
-('20220003', '王五', '$2a$10$15zDnjL6saIhLgqQlcMWcO8TpeMCAMH2EJow.jJ2TDT7LN3Gw.Ag6', '13900139003', 50) /* 用户-王五 */,
-('20220004', '赵六', '$2a$10$T5wdOCfvytTu5s9t3tmyeuk9rXFgkyKhA9XVV2FPW0Y.FN0yEDSLa', '13900139004', 120) /* 用户-赵六 */,
-('20220005', '陈七', '$2a$10$GZrCvnSsDL5G76a2QB5FQecW6FwGhlecmJo3BLgt4nstH5mZZ/ojS', '13900139005', 80) /* 用户-陈七 */,
-('20220006', '周八', '$2a$10$EFaJ9br/ZMkS7pYqcnLu/.JhKTLoY/KQ6zwyrJm0ti3uWS0kL2CW6', '13900139006', 200) /* 用户-周八 */,
-('20220007', '吴九', '$2a$10$jcmHJb5qwjFbO/LsiE/Y0.ZFUaG4Ii7tvAkanwGkH/fjShbbTTnIS', '13900139007', 10) /* 用户-吴九 */;
+INSERT INTO `sys_user` (`student_no`, `nickname`, `password`, `phone`, `points`, `role`) VALUES 
+('admin', '系统管理员', '$2a$10$x4QdatbarahhwWT8OnqfJ.lBtmK9yVFC8TNVgyoss3tkD2FBmokmW', '13800138000', 9999, 1) /* 系统管理员 */,
+('20220001', '张三', '$2a$10$VERIFi99u9UYY2EE1x1cauesvFlZyiVnZAq49PWM.keQqWWpzJCOm', '13900139001', 150, 0) /* 用户-张三 */,
+('20220002', '李四', '$2a$10$ZAFn6DH/s7R97LQ2Q3uB9ebZRgwisabXGHPYnQYEoY5ylUcb4QbYm', '13900139002', 300, 0) /* 用户-李四 */,
+('20220003', '王五', '$2a$10$15zDnjL6saIhLgqQlcMWcO8TpeMCAMH2EJow.jJ2TDT7LN3Gw.Ag6', '13900139003', 50, 0) /* 用户-王五 */,
+('20220004', '赵六', '$2a$10$T5wdOCfvytTu5s9t3tmyeuk9rXFgkyKhA9XVV2FPW0Y.FN0yEDSLa', '13900139004', 120, 0) /* 用户-赵六 */,
+('20220005', '陈七', '$2a$10$GZrCvnSsDL5G76a2QB5FQecW6FwGhlecmJo3BLgt4nstH5mZZ/ojS', '13900139005', 80, 0) /* 用户-陈七 */,
+('20220006', '周八', '$2a$10$EFaJ9br/ZMkS7pYqcnLu/.JhKTLoY/KQ6zwyrJm0ti3uWS0kL2CW6', '13900139006', 200, 0) /* 用户-周八 */,
+('20220007', '吴九', '$2a$10$jcmHJb5qwjFbO/LsiE/Y0.ZFUaG4Ii7tvAkanwGkH/fjShbbTTnIS', '13900139007', 10, 0) /* 用户-吴九 */;
 
 INSERT INTO `goods_category` (`name`, `sort`) VALUES 
 ('教材教辅', 1) /* 分类-教材教辅 */,

@@ -1,5 +1,6 @@
 package com.campus.service.impl;
 
+import com.campus.common.PageQuery;
 import com.campus.exception.GlobalException;
 import com.campus.mapper.PointMapper;
 import com.campus.mapper.SysUserMapper;
@@ -9,13 +10,13 @@ import com.campus.pojo.PointRecord;
 import com.campus.pojo.SysUser;
 import com.campus.service.PointService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.Random;
 
 import com.campus.pojo.PointOrder;
@@ -38,23 +39,29 @@ public class PointServiceImpl implements PointService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int signIn(Long userId) {
-               if (pointMapper.checkTodaySignIn(userId) > 0) {
+        if (pointMapper.checkTodaySignIn(userId) > 0) {
             throw new GlobalException("今日已签到");
         }
-        
+
         int signPoints = new Random().nextInt(10) + 1; // 1-10 points
         pointMapper.updateUserPoints(userId, signPoints);
-        
-        SysUser user = sysUserMapper.selectById(userId);
-        
+
+        // 锁行读取，确保 balance_after 不受并发积分变动影响
+        SysUser user = sysUserMapper.selectByIdForUpdate(userId);
+
         PointRecord record = new PointRecord();
         record.setUserId(userId);
         record.setChangeType(0); // 0-签到获取
         record.setChangeAmount(signPoints);
         record.setBalanceAfter(user.getPoints());
         record.setCreateTime(LocalDateTime.now());
-        pointMapper.insertRecord(record);
-        
+        try {
+            pointMapper.insertRecord(record);
+        } catch (DuplicateKeyException e) {
+            // 并发重复签到：由唯一索引兜底，事务回滚避免重复加分
+            throw new GlobalException("今日已签到");
+        }
+
         return signPoints;
     }
 
@@ -79,7 +86,7 @@ public class PointServiceImpl implements PointService {
             throw new GlobalException("库存不足");
         }
 
-SysUser user = sysUserMapper.selectById(userId);
+        SysUser user = sysUserMapper.selectById(userId);
         if (user == null) {
             throw new GlobalException("用户不存在");
         }
@@ -98,7 +105,8 @@ SysUser user = sysUserMapper.selectById(userId);
             throw new GlobalException("您的积分不足");
         }
 
-        SysUser freshUser = sysUserMapper.selectById(userId);
+        // 锁行读取，确保 balance_after 记录准确
+        SysUser freshUser = sysUserMapper.selectByIdForUpdate(userId);
 
         PointRecord record = new PointRecord();
         record.setUserId(userId);
@@ -139,11 +147,10 @@ SysUser user = sysUserMapper.selectById(userId);
 
     @Override
     public PageResult<PointGoods> getAdminGoodsList(int pageNum, int pageSize, String keyword, Integer status) {
-        // 分页参数边界校验
-        pageNum = Math.max(1, pageNum);
-        pageSize = Math.min(100, Math.max(1, pageSize));
-        int offset = (pageNum - 1) * pageSize;
-        List<PointGoods> list = pointMapper.selectAdminPointGoods(keyword, status, offset, pageSize);
+        int page = PageQuery.normalizePageNum(pageNum);
+        int size = PageQuery.normalizePageSize(pageSize);
+        int offset = PageQuery.offset(page, size);
+        List<PointGoods> list = pointMapper.selectAdminPointGoods(keyword, status, offset, size);
         long total = pointMapper.countAdminPointGoods(keyword, status);
         return new PageResult<>(total, list);
     }
@@ -216,11 +223,10 @@ SysUser user = sysUserMapper.selectById(userId);
 
     @Override
     public PageResult<PointOrder> getAdminOrders(int pageNum, int pageSize, String keyword, Integer status) {
-        // 分页参数边界校验
-        pageNum = Math.max(1, pageNum);
-        pageSize = Math.min(100, Math.max(1, pageSize));
-        int offset = (pageNum - 1) * pageSize;
-        List<PointOrder> list = pointMapper.selectAdminOrders(keyword, status, offset, pageSize);
+        int page = PageQuery.normalizePageNum(pageNum);
+        int size = PageQuery.normalizePageSize(pageSize);
+        int offset = PageQuery.offset(page, size);
+        List<PointOrder> list = pointMapper.selectAdminOrders(keyword, status, offset, size);
         long total = pointMapper.countAdminOrders(keyword, status);
         return new PageResult<>(total, list);
     }

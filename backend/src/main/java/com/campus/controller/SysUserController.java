@@ -55,11 +55,10 @@ public class SysUserController {
 
     @Operation(summary = "更新用户信息")
     @PostMapping("/update")
-    public Result<Void> updateUser(@RequestBody SysUser sysUser) {
+    public Result<Void> updateUser(@RequestBody com.campus.pojo.dto.UpdateUserDTO dto) {
         StpUtil.checkLogin();
         long userId = StpUtil.getLoginIdAsLong();
-        sysUser.setUserId(userId);
-        sysUserService.updateUser(sysUser);
+        sysUserService.updateUser(userId, dto);
         return Result.success();
     }
 

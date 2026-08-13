@@ -1,6 +1,7 @@
 package com.campus.service.impl;
 
 import com.campus.exception.GlobalException;
+import com.campus.common.PageQuery;
 import com.campus.mapper.GoodsInfoMapper;
 import com.campus.mapper.GoodsOrderMapper;
 import com.campus.pojo.CreateOrderDTO;
@@ -278,7 +279,8 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
 
     private void rewardPointsForTrade(Long userId, int points) {
         pointMapper.updateUserPoints(userId, points);
-        SysUser user = sysUserMapper.selectById(userId);
+        // 锁行读取，确保 balance_after 记录准确
+        SysUser user = sysUserMapper.selectByIdForUpdate(userId);
 
         PointRecord record = new PointRecord();
         record.setUserId(userId);
@@ -337,11 +339,10 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
 
     @Override
     public PageResult<GoodsOrder> getAdminOrderList(int pageNum, int pageSize, String keyword, Integer tradeType, Integer status) {
-        // 分页参数边界校验
-        pageNum = Math.max(1, pageNum);
-        pageSize = Math.min(100, Math.max(1, pageSize));
-        int offset = (pageNum - 1) * pageSize;
-        List<GoodsOrder> list = goodsOrderMapper.selectAdminList(offset, pageSize, keyword, tradeType, status);
+        int page = PageQuery.normalizePageNum(pageNum);
+        int size = PageQuery.normalizePageSize(pageSize);
+        int offset = PageQuery.offset(page, size);
+        List<GoodsOrder> list = goodsOrderMapper.selectAdminList(offset, size, keyword, tradeType, status);
         long total = goodsOrderMapper.countAdminList(keyword, tradeType, status);
         return new PageResult<>(total, list);
     }
