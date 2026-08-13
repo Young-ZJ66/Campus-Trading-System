@@ -1,6 +1,5 @@
 package com.campus.config;
 
-import com.campus.common.UploadPathResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -16,15 +15,18 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${campus.cors-origins:http://localhost:5173,http://localhost:3000}")
     private String[] corsOrigins;
 
-    @Autowired
-    private UploadPathResolver uploadPathResolver;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Autowired
     private AdminAuthInterceptor adminAuthInterceptor;
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
-        String path = "file:" + uploadPathResolver.resolve().replace("\\", "/");
+        String path = "file:" + uploadDir.replace("\\", "/");
+        if (!path.endsWith("/")) {
+            path += "/";
+        }
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(path);
     }

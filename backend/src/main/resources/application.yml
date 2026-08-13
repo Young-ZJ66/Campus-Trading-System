@@ -34,6 +34,11 @@ sa-token:
   token-style: uuid
   is-log: false
 
+file:
+  # 文件上传目录，基于启动目录(user.dir)解析，默认在 backend 目录下启动
+  # 如需自定义，改为绝对路径即可（例如 D:/uploads/）
+  upload-dir: ${user.dir}/uploads/
+
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) %clr([%thread]){faint} %clr(%logger{36}){cyan} %clr(:){faint} %msg%n"

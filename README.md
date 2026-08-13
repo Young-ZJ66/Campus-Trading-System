@@ -43,7 +43,7 @@
 
 ---
 
-## 极速部署指南
+## 快速开始
 
 ### 1. 准备工作
 
@@ -53,14 +53,22 @@
 - **MySQL 8.0** 及以上
 - **Node.js 20.19+ / 22.12+** (建议使用 npm)
 
-### 2. 后端部署 (`backend`)
+### 2. 数据库配置
 
-1. 打开 MySQL，创建名为 `campus_trading` 的数据库：
+1. 创建数据库：
+
    ```sql
    CREATE DATABASE campus_trading CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
    ```
-2. 执行项目中的 SQL 初始化脚本：导入 `backend/src/main/resources/sql/schema.sql` 文件以创建表结构并加载测试数据。
-3. 配置数据库连接（修改 `application.yml` 中的用户名与密码）：
+
+2. 导入初始化脚本（创建表结构并加载测试数据）：
+
+   ```bash
+   mysql -uroot -p campus_trading < backend/src/main/resources/sql/schema.sql
+   ```
+
+3. 修改 `backend/src/main/resources/application.yml` 中的数据库用户名与密码：
+
    ```yaml
    spring:
      datasource:
@@ -68,30 +76,39 @@
        username: 您的MySQL用户名
        password: 您的MySQL密码
    ```
-4. 运行 `com.campus.CampusTradingApplication` 主类即可启动后端，默认服务端口为 `8080`。
-    注意：图片上传目录基于 `${user.dir}/uploads/`，请确保在 `backend` 目录下启动后端，否则图片上传与访问路径会错位。
-5. API 文档地址：启动后访问 `http://localhost:8080/doc.html`
 
-### 3. 前端部署 (`front`)
+### 3. 文件上传目录配置
 
-1. 进入 `front` 目录：
-   ```bash
-   cd front
-   ```
-2. 安装依赖包：
-   ```bash
-   npm install
-   ```
-3. 配置 API 地址（可选，默认已提供开发环境配置）：
-   ```bash
-   # 编辑 .env 文件
-   VITE_API_BASE_URL=http://localhost:8080
-   ```
-4. 运行本地开发服务器：
-   ```bash
-   npm run dev
-   ```
-5. 启动成功后，在浏览器访问控制台打印的地址（如 `http://localhost:5173`）即可。
+`backend/src/main/resources/application.yml` 中的 `file.upload-dir`：
+
+```yaml
+file:
+  # 上传目录，基于启动目录(user.dir)解析，默认在 backend 目录下启动
+  # 如需自定义，改为绝对路径即可（例如 D:/uploads/）
+  upload-dir: ${user.dir}/uploads/
+```
+
+- 默认值基于启动目录解析，请确保在 `backend` 目录下启动后端，否则图片上传与访问路径会错位。
+- 改为绝对路径后，可在任意目录启动。
+
+### 4. 后端启动
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+启动成功后，API 文档地址为 `http://localhost:8080/doc.html`。
+
+### 5. 前端启动
+
+```bash
+cd front
+npm install
+npm run dev
+```
+
+启动成功后，在浏览器访问控制台打印的地址（如 `http://localhost:5173`）即可。
 
 ---
 

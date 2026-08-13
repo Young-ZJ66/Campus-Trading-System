@@ -2,13 +2,12 @@ package com.campus.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.campus.common.Result;
-import com.campus.common.UploadPathResolver;
 import com.campus.exception.GlobalException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,8 +35,8 @@ public class FileController {
             "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"
     );
 
-    @Autowired
-    private UploadPathResolver uploadPathResolver;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Operation(summary = "上传文件")
     @PostMapping("/upload")
@@ -65,7 +64,7 @@ public class FileController {
 
         String newFilename = UUID.randomUUID().toString().replaceAll("-", "") + suffix;
 
-        File dir = new File(uploadPathResolver.resolve());
+        File dir = new File(uploadDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }
