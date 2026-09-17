@@ -51,7 +51,7 @@
     </select>
 
     <select id="countTodayNew" resultType="long">
-        SELECT COUNT(1) FROM goods_info WHERE DATE(create_time) = CURDATE()
+        SELECT COUNT(1) FROM goods_info WHERE create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="countOnSale" resultType="long">
@@ -62,7 +62,7 @@
         SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
                COUNT(1) AS newGoods
         FROM goods_info
-        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        WHERE create_time >= #{startDate} AND create_time &lt; #{endDate} + INTERVAL 1 DAY
         GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
         ORDER BY date ASC
     </select>

@@ -118,7 +118,7 @@
     </select>
 
     <select id="countTodayNew" resultType="long">
-        SELECT COUNT(1) FROM goods_order WHERE DATE(create_time) = CURDATE()
+        SELECT COUNT(1) FROM goods_order WHERE create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="countCompletedTotal" resultType="long">
@@ -126,7 +126,7 @@
     </select>
 
     <select id="countCompletedToday" resultType="long">
-        SELECT COUNT(1) FROM goods_order WHERE status = 2 AND DATE(create_time) = CURDATE()
+        SELECT COUNT(1) FROM goods_order WHERE status = 2 AND create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="sumGmvTotal" resultType="java.math.BigDecimal">
@@ -134,7 +134,7 @@
     </select>
 
     <select id="sumGmvToday" resultType="java.math.BigDecimal">
-        SELECT COALESCE(SUM(amount), 0) FROM goods_order WHERE trade_type = 0 AND status = 2 AND DATE(create_time) = CURDATE()
+        SELECT COALESCE(SUM(amount), 0) FROM goods_order WHERE trade_type = 0 AND status = 2 AND create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="selectOrderTrend" resultType="com.campus.pojo.dto.AdminDashboardTrendDTO">
@@ -142,7 +142,7 @@
                COUNT(1) AS orderCount,
                COALESCE(SUM(CASE WHEN trade_type = 0 AND status = 2 THEN amount ELSE 0 END), 0) AS gmv
         FROM goods_order
-        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        WHERE create_time >= #{startDate} AND create_time &lt; #{endDate} + INTERVAL 1 DAY
         GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
         ORDER BY date ASC
     </select>

@@ -9,7 +9,7 @@ public interface GoodsInfoService {
     
     PageResult<GoodsInfo> getList(GoodsQueryDTO query);
     
-    GoodsInfo getDetail(Long goodsId);
+    GoodsInfo getDetail(Long goodsId, String clientIp);
 
     void updateStatus(Long goodsId, Integer status, Long userId);
 

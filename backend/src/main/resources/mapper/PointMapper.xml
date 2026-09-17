@@ -85,7 +85,7 @@
 
     <select id="checkTodaySignIn" resultType="int">
         SELECT COUNT(1) FROM point_record 
-        WHERE user_id = #{userId} AND change_type = 0 AND DATE(create_time) = CURDATE()
+        WHERE user_id = #{userId} AND change_type = 0 AND create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="selectSignInDates" resultType="String">
@@ -147,7 +147,7 @@
     </select>
 
     <select id="countTodayOrders" resultType="long">
-        SELECT COUNT(1) FROM point_order WHERE DATE(create_time) = CURDATE()
+        SELECT COUNT(1) FROM point_order WHERE create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
 </mapper>

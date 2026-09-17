@@ -60,14 +60,14 @@
     </update>
 
     <select id="countTodayNew" resultType="long">
-        SELECT COUNT(1) FROM sys_user WHERE DATE(create_time) = CURDATE()
+        SELECT COUNT(1) FROM sys_user WHERE create_time >= CURDATE() AND create_time < CURDATE() + INTERVAL 1 DAY
     </select>
 
     <select id="selectDailyNewUsers" resultType="com.campus.pojo.dto.AdminDashboardTrendDTO">
         SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
                COUNT(1) AS newUsers
         FROM sys_user
-        WHERE DATE(create_time) BETWEEN #{startDate} AND #{endDate}
+        WHERE create_time >= #{startDate} AND create_time &lt; #{endDate} + INTERVAL 1 DAY
         GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
         ORDER BY date ASC
     </select>

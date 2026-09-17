@@ -7,18 +7,27 @@ import com.campus.pojo.GoodsQueryDTO;
 import com.campus.pojo.GoodsStatus;
 import com.campus.pojo.PageResult;
 import com.campus.service.GoodsInfoService;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GoodsInfoServiceImpl implements GoodsInfoService {
 
     @Autowired
     private GoodsInfoMapper goodsInfoMapper;
+
+    // 浏览量防刷：同一 IP 对同一商品 5 分钟内只计一次浏览
+    private final Cache<String, Boolean> viewCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(10000)
+            .build();
 
     @Override
     public void publish(GoodsInfo goodsInfo, Long userId) {
@@ -44,10 +53,14 @@ public class GoodsInfoServiceImpl implements GoodsInfoService {
     }
 
     @Override
-    public GoodsInfo getDetail(Long goodsId) {
+    public GoodsInfo getDetail(Long goodsId, String clientIp) {
         GoodsInfo goodsInfo = goodsInfoMapper.selectById(goodsId);
         if (goodsInfo != null) {
-            goodsInfoMapper.updateViewCount(goodsId);
+            String cacheKey = clientIp + ":" + goodsId;
+            if (viewCache.getIfPresent(cacheKey) == null) {
+                goodsInfoMapper.updateViewCount(goodsId);
+                viewCache.put(cacheKey, true);
+            }
         }
         return goodsInfo;
     }

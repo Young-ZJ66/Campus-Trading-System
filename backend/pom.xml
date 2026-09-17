@@ -52,10 +52,22 @@
 			<version>5.8.25</version>
 		</dependency>
 
-		<!-- Caffeine 本地缓存（登录限流） -->
+		<!-- Caffeine 本地缓存（登录限流 + 业务缓存） -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
+		</dependency>
+
+		<!-- Spring Boot Actuator 健康检查与监控 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- WebSocket 实时通知 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
 		<!-- Knife4j OpenAPI 3 文档（doc.html） -->
