@@ -170,7 +170,7 @@ body {
 /* ---- Element Plus 全局主题覆盖 ---- */
 
 /* 分页器主色 */
-:deep(.el-pagination.is-background .el-pager li.is-active) {
+.el-pagination.is-background .el-pager li.is-active {
   background-color: var(--color-primary) !important;
 }
 
@@ -181,6 +181,6 @@ body {
 }
 
 /* 卡片圆角统一 */
-:deep(.el-card) {
+.el-card {
   border-radius: var(--radius-lg);
 }

@@ -82,12 +82,16 @@
 <script setup>
 import { reactive, ref, onMounted, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import request from '../../utils/request'
-import * as echarts from 'echarts/core'
-import { BarChart, LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
 
-echarts.use([BarChart, LineChart, GridComponent, TooltipComponent, CanvasRenderer])
+let echarts = null
+const echartsReady = import('echarts/core').then(async (mod) => {
+  const { BarChart, LineChart } = await import('echarts/charts')
+  const { GridComponent, TooltipComponent } = await import('echarts/components')
+  const { CanvasRenderer } = await import('echarts/renderers')
+  mod.use([BarChart, LineChart, GridComponent, TooltipComponent, CanvasRenderer])
+  echarts = mod
+  return mod
+})
 
 const loading = ref(false)
 const loadingTrend = ref(false)
@@ -162,11 +166,12 @@ const orderSeries = computed(() => trend.value.map(i => Number(i.orderCount || 0
 const gmvSeries = computed(() => trend.value.map(i => Number(i.gmv || 0)))
 
 const ensureCharts = async () => {
+  await echartsReady
   await nextTick()
-  if (orderChartRef.value && !orderChart) {
+  if (orderChartRef.value && !orderChart && echarts) {
     orderChart = echarts.init(orderChartRef.value)
   }
-  if (gmvChartRef.value && !gmvChart) {
+  if (gmvChartRef.value && !gmvChart && echarts) {
     gmvChart = echarts.init(gmvChartRef.value)
   }
 }

@@ -59,3 +59,11 @@ file:
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) %clr([%thread]){faint} %clr(%logger{36}){cyan} %clr(:){faint} %msg%n"
+
+# 开发环境请创建 application-dev.yml（已被 .gitignore 忽略），参考内容：
+# mybatis:
+#   configuration:
+#     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# logging:
+#   level:
+#     com.campus: DEBUG

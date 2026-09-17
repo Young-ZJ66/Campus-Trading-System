@@ -20,8 +20,8 @@ export function useWebSocket() {
     const wsUrl = baseURL.replace(/^http/, 'ws') + '/ws'
 
     try {
-      // 使用原生 WebSocket + SockJS 模拟
-      ws = new WebSocket(wsUrl.replace('ws://', 'http://').replace('wss://', 'https://'))
+      // 原生 WebSocket 连接 STOMP 端点
+      ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
         connected.value = true
