@@ -6,6 +6,7 @@ import com.campus.pojo.SysNews;
 import com.campus.service.SysNewsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +31,13 @@ public class AdminNewsController {
 
     @Operation(summary = "新增资讯")
     @PostMapping("/create")
-    public Result<SysNews> create(@RequestBody SysNews news) {
+    public Result<SysNews> create(@Valid @RequestBody SysNews news) {
         return Result.success(sysNewsService.create(news));
     }
 
     @Operation(summary = "编辑资讯")
     @PostMapping("/update")
-    public Result<Void> update(@RequestBody SysNews news) {
+    public Result<Void> update(@Valid @RequestBody SysNews news) {
         sysNewsService.update(news);
         return Result.success();
     }

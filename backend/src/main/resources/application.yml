@@ -6,6 +6,8 @@ campus:
   cors-origins: http://localhost:5173,http://localhost:3000
 
 spring:
+  profiles:
+    active: dev
   application:
     name: campus-trading
   servlet:
@@ -14,16 +16,31 @@ spring:
       max-request-size: 10MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/campus_trading?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: root
-    password: 1234
+    url: ${DB_URL:jdbc:mysql://localhost:3306/campus_trading?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:1234}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+# Actuator 端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.campus.pojo
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 sa-token:
   token-name: Authorization
@@ -37,7 +54,7 @@ sa-token:
 file:
   # 文件上传目录，基于启动目录(user.dir)解析，默认在 backend 目录下启动
   # 如需自定义，改为绝对路径即可（例如 D:/uploads/）
-  upload-dir: ${user.dir}/uploads/
+  upload-dir: ${UPLOAD_DIR:${user.dir}/uploads/}
 
 logging:
   pattern:

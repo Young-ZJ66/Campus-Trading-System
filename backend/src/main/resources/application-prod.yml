@@ -1,0 +1,14 @@
+# 生产环境配置
+campus:
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173}
+
+logging:
+  level:
+    com.campus: INFO
+    root: WARN
+  file:
+    name: logs/campus-trading.log
+  logback:
+    rollingpolicy:
+      max-file-size: 50MB
+      max-history: 30

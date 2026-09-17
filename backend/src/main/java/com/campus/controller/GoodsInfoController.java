@@ -8,6 +8,7 @@ import com.campus.pojo.PageResult;
 import com.campus.service.GoodsInfoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class GoodsInfoController {
 
     @Operation(summary = "发布商品")
     @PostMapping("/publish")
-    public Result<Void> publish(@RequestBody GoodsInfo goodsInfo) {
+    public Result<Void> publish(@Valid @RequestBody GoodsInfo goodsInfo) {
         StpUtil.checkLogin();
         long userId = StpUtil.getLoginIdAsLong();
         goodsInfoService.publish(goodsInfo, userId);
@@ -32,7 +33,7 @@ public class GoodsInfoController {
 
     @Operation(summary = "更新商品")
     @PostMapping("/update")
-    public Result<Void> update(@RequestBody GoodsInfo goodsInfo) {
+    public Result<Void> update(@Valid @RequestBody GoodsInfo goodsInfo) {
         StpUtil.checkLogin();
         long userId = StpUtil.getLoginIdAsLong();
         goodsInfoService.updateGoods(goodsInfo, userId);
@@ -60,8 +61,10 @@ public class GoodsInfoController {
 
     @Operation(summary = "商品详情")
     @GetMapping("/detail/{id}")
-    public Result<GoodsInfo> getDetail(@PathVariable Long id) {
-        GoodsInfo goodsInfo = goodsInfoService.getDetail(id);
+    public Result<GoodsInfo> getDetail(@PathVariable Long id,
+                                       jakarta.servlet.http.HttpServletRequest request) {
+        String clientIp = request.getRemoteAddr();
+        GoodsInfo goodsInfo = goodsInfoService.getDetail(id, clientIp);
         return Result.success(goodsInfo);
     }
 

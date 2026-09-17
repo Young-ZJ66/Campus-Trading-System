@@ -1,5 +1,6 @@
 package com.campus.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -8,6 +9,7 @@ public class SysUser {
     private Long userId;
     private String studentNo;
     private String nickname;
+    @JsonIgnore
     private String password;
     private String phone;
     private String avatar;

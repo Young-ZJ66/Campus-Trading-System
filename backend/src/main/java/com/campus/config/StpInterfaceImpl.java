@@ -3,6 +3,8 @@ package com.campus.config;
 import cn.dev33.satoken.stp.StpInterface;
 import com.campus.mapper.SysUserMapper;
 import com.campus.pojo.SysUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,8 @@ import java.util.List;
  */
 @Component
 public class StpInterfaceImpl implements StpInterface {
+
+    private static final Logger log = LoggerFactory.getLogger(StpInterfaceImpl.class);
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -46,6 +50,7 @@ public class StpInterfaceImpl implements StpInterface {
                 }
             }
         } catch (NumberFormatException e) {
+            log.warn("无效的用户ID格式: {}", loginId);
         }
         return roles;
     }

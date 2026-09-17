@@ -52,6 +52,10 @@ build/
 
 ### VS Code ###
 .vscode/
+.zcode/
+.trae/
+.qoder/
+.workbuddy/
 
 ### Spring Boot ###
 application-local.yml

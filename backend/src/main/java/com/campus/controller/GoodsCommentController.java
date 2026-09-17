@@ -6,6 +6,7 @@ import com.campus.pojo.GoodsComment;
 import com.campus.service.GoodsCommentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class GoodsCommentController {
 
     @Operation(summary = "发表评论")
     @PostMapping("/add")
-    public Result<Void> addComment(@RequestBody GoodsComment comment) {
+    public Result<Void> addComment(@Valid @RequestBody GoodsComment comment) {
         StpUtil.checkLogin();
         long userId = StpUtil.getLoginIdAsLong();
         goodsCommentService.addComment(comment, userId);
