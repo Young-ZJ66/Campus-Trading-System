@@ -15,7 +15,9 @@ import com.campus.pojo.SysUser;
 import com.campus.pojo.GoodsStatus;
 import com.campus.pojo.TradeType;
 import com.campus.pojo.OrderStatus;
+import com.campus.pojo.Notification;
 import com.campus.service.GoodsOrderService;
+import com.campus.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,9 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
 
     @Autowired
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -93,6 +98,16 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
         }
 
         goodsOrderMapper.insert(order);
+
+        // 通知卖家有新订单
+        try {
+            String tradeTypeStr = (dto.getTradeType() != null && dto.getTradeType() == TradeType.BARTER.getValue()) ? "换物请求" : "购买订单";
+            notificationService.sendToUser(targetGoods.getUserId(),
+                    new Notification("ORDER_CREATED", "新" + tradeTypeStr,
+                            "您发布的「" + targetGoods.getTitle() + "」有一个新的" + tradeTypeStr, order.getOrderId()));
+        } catch (Exception ignored) {
+        }
+
         return order;
     }
 
@@ -149,6 +164,14 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
                 // 级联取消其它与这两个商品关联的待同意订单，并解锁它们对应的交换商品
                 cascadeCancelPendingForGoods(order.getGoodsId(), orderId);
                 cascadeCancelPendingForGoods(order.getExchangeGoodsId(), orderId);
+
+                // 通知买方换物请求已通过
+                try {
+                    notificationService.sendToUser(order.getBuyerId(),
+                            new Notification("ORDER_APPROVED", "换物请求已通过",
+                                    "您对「" + targetGoods.getTitle() + "」的换物请求已被卖家同意", orderId));
+                } catch (Exception ignored) {
+                }
             } else if (status == OrderStatus.CANCELLED.getValue() || status == OrderStatus.BARTER_REJECTED.getValue()) {
                 int rows = goodsOrderMapper.updateStatusCas(orderId, OrderStatus.BARTER_REJECTED.getValue(), OrderStatus.BARTER_PENDING.getValue());
                 if (rows == 0) {
@@ -171,6 +194,14 @@ public class GoodsOrderServiceImpl implements GoodsOrderService {
             if (points > 0) {
                 rewardPointsForTrade(order.getBuyerId(), points);
                 rewardPointsForTrade(order.getSellerId(), points);
+            }
+
+            // 通知卖方交易完成
+            try {
+                notificationService.sendToUser(order.getSellerId(),
+                        new Notification("ORDER_COMPLETED", "交易已完成",
+                                "订单 " + order.getOrderNo() + " 已确认收货，积分奖励已发放", orderId));
+            } catch (Exception ignored) {
             }
         } else {
             throw new GlobalException("当前订单状态不支持此操作");
