@@ -42,7 +42,7 @@
         <div class="goods-grid" v-loading="loading">
           <el-card v-for="item in pointGoodsList" :key="item.itemId" class="goods-card" :body-style="{ padding: '0px' }" @click="goToDetail(item.itemId)" style="cursor: pointer;">
             <div class="image-wrapper">
-              <img v-if="getCoverImage(item.image)" :src="getCoverImage(item.image)" class="image" />
+              <img v-if="getCoverImage(item.image)" :src="getCoverImage(item.image)" class="image" loading="lazy" />
               <div v-else class="no-image">暂无图片</div>
             </div>
             <div class="card-content">
@@ -123,7 +123,9 @@ const checkSignInStatus = async () => {
   if (!userStore.token) return
   try {
     hasSignedInToday.value = await request.get('/api/point/checkSignIn')
-  } catch (e) {}
+  } catch (e) {
+    // 签到状态查询失败不影响页面展示
+  }
 }
 
 const fetchPointGoods = async () => {
@@ -131,7 +133,7 @@ const fetchPointGoods = async () => {
   try {
     pointGoodsList.value = await request.get('/api/point/goods')
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取积分商品失败')
   } finally {
     loading.value = false
   }
@@ -153,7 +155,7 @@ const fetchSignInCalendar = async () => {
       }
     }
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取签到日历失败')
   } finally {
     calendarLoading.value = false
   }
@@ -175,8 +177,7 @@ const handleSignIn = async () => {
     userStore.setUserInfo(userInfo)
     fetchSignInCalendar()
   } catch (error) {
-    
-    console.error(error)
+    // 错误已由 request.js 拦截器处理
   } finally {
     signLoading.value = false
   }
@@ -210,7 +211,7 @@ const handleExchange = (item) => {
       userStore.setUserInfo(userInfo)
       fetchPointGoods()
     } catch (error) {
-      console.error(error)
+      // 错误已由 request.js 拦截器处理
     }
   }).catch(() => {})
 }
@@ -439,5 +440,21 @@ const handleExchange = (item) => {
 .exchange-btn:disabled {
   background: #c8d6e5;
   color: #fff;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 16px !important;
+  }
+  .goods-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .point-banner .banner-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
 }
 </style>

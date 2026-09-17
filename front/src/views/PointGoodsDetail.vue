@@ -114,7 +114,7 @@ const fetchDetail = async () => {
   try {
     goods.value = await request.get(`/api/point/goods/${goodsId}`)
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取积分商品详情失败')
   }
 }
 
@@ -160,7 +160,7 @@ const handleExchange = () => {
       fetchDetail()
       router.push('/user')
     } catch (error) {
-      console.error(error)
+      // 错误已由 request.js 拦截器处理
     }
   }).catch(() => {})
 }

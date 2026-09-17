@@ -147,7 +147,7 @@ const open = async (goods = null) => {
     try {
       categoryList.value = await request.get('/api/category/list')
     } catch (error) {
-      console.error(error)
+      ElMessage.error('获取分类列表失败')
     }
   }
 }
@@ -195,7 +195,7 @@ const submitForm = () => {
         
         emit('success')
       } catch (error) {
-        console.error(error)
+        // 错误已由 request.js 拦截器处理
       } finally {
         loading.value = false
       }

@@ -15,7 +15,7 @@
           <el-card v-for="item in newsList" :key="item.newsId" class="news-card" @click="openDetail(item.newsId)">
             <div class="news-content-wrapper">
               <div class="news-img" v-if="item.coverImage">
-                <img :src="getCoverImage(item.coverImage)" alt="cover" />
+                <img :src="getCoverImage(item.coverImage)" alt="cover" loading="lazy" />
               </div>
               <div class="news-text">
                 <h3 class="news-title">
@@ -49,7 +49,7 @@
           发布于：{{ formatTime(currentNews.createTime) }} | 阅读：{{ currentNews.viewCount }}
         </div>
         <el-divider />
-        <div class="dialog-content" v-html="currentNews.content"></div>
+        <div class="dialog-content" v-html="sanitizeHtml(currentNews.content)"></div>
       </el-dialog>
     </el-container>
   </div>
@@ -65,6 +65,7 @@ import Navbar from '../components/Navbar.vue'
 import { formatTime } from '../utils/time'
 import { Notification } from '@element-plus/icons-vue'
 import { getCoverImage } from '../utils/image'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -89,10 +90,14 @@ const fetchNewsList = async () => {
     newsList.value = res.list
     total.value = res.total
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取资讯列表失败')
   } finally {
     loading.value = false
   }
+}
+
+const sanitizeHtml = (html) => {
+  return DOMPurify.sanitize(html || '')
 }
 
 const openDetail = async (id) => {
@@ -101,7 +106,7 @@ const openDetail = async (id) => {
     currentNews.value = res
     dialogVisible.value = true
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取资讯详情失败')
   }
 }
 
@@ -201,5 +206,29 @@ const openDetail = async (id) => {
   color: #303133;
   font-size: 16px;
   padding: 0 20px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 16px !important;
+  }
+  .news-content-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .news-img {
+    width: 100%;
+    height: 160px;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+  .news-title {
+    font-size: 16px;
+  }
+  :deep(.el-dialog) {
+    width: 90% !important;
+    margin: 16px auto;
+  }
 }
 </style>

@@ -1,11 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+const safeParse = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '{}')
+  } catch {
+    localStorage.removeItem(key)
+    return {}
+  }
+}
+
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
+  const userInfo = ref(safeParse('userInfo'))
   const adminToken = ref(localStorage.getItem('adminToken') || '')
-  const adminInfo = ref(JSON.parse(localStorage.getItem('adminInfo') || '{}'))
+  const adminInfo = ref(safeParse('adminInfo'))
 
   // 登录注册弹窗状态
   const showLoginDialog = ref(false)

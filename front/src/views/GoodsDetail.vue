@@ -27,7 +27,7 @@
                   :class="{ active: currentImage === img }"
                   @click="currentImage = img"
                 >
-                  <img :src="img" />
+                  <img :src="img" loading="lazy" />
                 </div>
               </div>
             </div>
@@ -248,7 +248,9 @@ const checkFavorite = async () => {
   try {
     const res = await request.get(`/api/favorite/check?goodsId=${goodsId}`)
     isFavorite.value = res || false
-  } catch (e) {}
+  } catch (e) {
+    // 收藏状态查询失败不影响页面
+  }
 }
 
 const toggleFavorite = async () => {
@@ -267,7 +269,7 @@ const toggleFavorite = async () => {
       ElMessage.success('收藏成功')
     }
   } catch (error) {
-    console.error(error)
+    ElMessage.error('操作失败，请重试')
   }
 }
 
@@ -284,7 +286,7 @@ const fetchGoodsDetail = async () => {
       }
     }
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取商品详情失败')
   }
 }
 
@@ -292,7 +294,7 @@ const fetchComments = async () => {
   try {
     comments.value = await request.get(`/api/comment/list/${goodsId}`)
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取评论列表失败')
   }
 }
 
@@ -358,7 +360,7 @@ const submitComment = async () => {
     newComment.value = ''
     fetchComments()
   } catch (error) {
-    console.error(error)
+    // 错误已由 request.js 拦截器处理
   }
 }
 
@@ -377,7 +379,7 @@ const submitReply = async (comment) => {
     cancelReply()
     fetchComments()
   } catch (error) {
-    console.error(error)
+    // 错误已由 request.js 拦截器处理
   }
 }
 
@@ -386,7 +388,7 @@ const fetchMySellGoods = async () => {
     const res = await request.get('/api/goods/myPublished')
     mySellGoodsList.value = res.filter(item => item.status === 0)
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取我的商品失败')
   }
 }
 
@@ -430,7 +432,7 @@ const confirmCreateOrder = async (tradeType) => {
     exchangeDialogVisible.value = false
     router.push('/user')
   } catch (error) {
-    console.error(error)
+    // 错误已由 request.js 拦截器处理
   }
 }
 
@@ -696,5 +698,12 @@ const confirmCreateOrder = async (tradeType) => {
 }
 .safety-list li {
   margin-bottom: 10px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 16px !important;
+  }
 }
 </style>

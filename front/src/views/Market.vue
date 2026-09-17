@@ -38,7 +38,7 @@
           <el-card v-for="item in goodsList" :key="item.goodsId" class="goods-card" :body-style="{ padding: '0px' }" @click="goToDetail(item.goodsId)" style="cursor: pointer;">
             <div class="image-wrapper">
               <span v-if="item.isExchange === 1" class="exchange-badge">支持换物</span>
-              <img v-if="getCoverImage(item.images)" :src="getCoverImage(item.images)" class="image" />
+              <img v-if="getCoverImage(item.images)" :src="getCoverImage(item.images)" class="image" loading="lazy" />
               <div v-else class="no-image">暂无图片</div>
             </div>
             <div class="card-content">
@@ -87,6 +87,7 @@ defineOptions({
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import request from '../utils/request'
 import Navbar from '../components/Navbar.vue'
 import { getCoverImage } from '../utils/image'
@@ -116,7 +117,7 @@ const fetchCategories = async () => {
   try {
     categoryList.value = await request.get('/api/category/list')
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取分类列表失败')
   }
 }
 
@@ -126,7 +127,7 @@ const fetchGoodsList = async () => {
     goodsList.value = res.list
     total.value = res.total
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取商品列表失败')
   }
 }
 
@@ -362,6 +363,36 @@ const goToDetail = (id) => {
 
 :deep(.el-pagination.is-background .el-pager li.is-active) {
   background-color: var(--color-primary) !important;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .market-header {
+    padding: 20px 16px;
+  }
+  .market-header h2 {
+    font-size: 20px;
+  }
+  .filter-bar {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .filter-bar .el-input,
+  .filter-bar .el-select {
+    width: 100% !important;
+  }
+  .goods-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .goods-title {
+    font-size: 13px;
+  }
+  .goods-price {
+    font-size: 16px;
+  }
 }
 
 </style>

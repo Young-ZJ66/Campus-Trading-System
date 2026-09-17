@@ -63,11 +63,20 @@ const registerForm = reactive({
 })
 
 const rules = reactive({
-  studentNo: [{ required: true, message: '请输入学号', trigger: 'blur' }],
-  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
+  studentNo: [
+    { required: true, message: '请输入学号', trigger: 'blur' },
+    { pattern: /^[0-9a-zA-Z]{6,20}$/, message: '学号格式不正确', trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 1, max: 30, message: '昵称长度需在1-30之间', trigger: 'blur' }
+  ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 32, message: '密码长度必须在6-32位之间', trigger: 'blur' }
+  ],
+  phone: [
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
   ]
 })
 
@@ -80,7 +89,7 @@ const handleRegister = () => {
         ElMessage.success('注册成功，请登录')
         goToLogin()
       } catch (error) {
-        console.error(error)
+        // 错误已由 request.js 拦截器处理
       } finally {
         loading.value = false
       }

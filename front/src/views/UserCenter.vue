@@ -386,7 +386,7 @@ const submitPassword = async () => {
         userStore.showLoginDialog = true
         router.push('/')
       } catch (error) {
-        console.error(error)
+        ElMessage.error('修改密码失败')
       } finally {
         passwordLoading.value = false
       }
@@ -457,7 +457,7 @@ const fetchProfile = async () => {
     const res = await request.get('/api/user/info')
     profileForm.value = res || {}
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取个人信息失败')
   }
 }
 
@@ -473,7 +473,7 @@ const saveProfile = async () => {
     userStore.userInfo.nickname = profileForm.value.nickname
     userStore.userInfo.phone = profileForm.value.phone
   } catch (error) {
-    console.error(error)
+    ElMessage.error('更新个人资料失败')
   } finally {
     savingProfile.value = false
   }
@@ -508,7 +508,7 @@ const fetchPointOrders = async () => {
   try {
     pointOrderList.value = await request.get('/api/point/orders')
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取积分兑换订单失败')
   } finally {
     loading.value = false
   }
@@ -519,7 +519,7 @@ const fetchPoints = async () => {
   try {
     pointList.value = await request.get('/api/point/records')
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取积分明细失败')
   } finally {
     loading.value = false
   }
@@ -530,7 +530,7 @@ const fetchFavorites = async () => {
   try {
     favoriteList.value = await request.get('/api/favorite/list')
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取收藏列表失败')
   } finally {
     loading.value = false
   }
@@ -545,7 +545,7 @@ const removeFavorite = async (goodsId) => {
       ElMessage.success('已取消收藏')
       fetchFavorites()
     } catch (error) {
-      console.error(error)
+      ElMessage.error('取消收藏失败')
     }
   }).catch(() => {})
 }
@@ -556,7 +556,7 @@ const fetchPublished = async () => {
     const res = await request.get('/api/goods/myPublished')
     publishedList.value = (res || []).filter(item => item.status !== 1)
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取发布的商品失败')
   } finally {
     loading.value = false
   }
@@ -577,7 +577,7 @@ const offlineGoods = async (goodsId) => {
       ElMessage.success('下架成功')
       fetchPublished()
     } catch (error) {
-      console.error(error)
+      ElMessage.error('下架失败')
     }
   }).catch(() => {})
 }
@@ -591,7 +591,7 @@ const republishGoods = async (goodsId) => {
       ElMessage.success('上架成功')
       fetchPublished()
     } catch (error) {
-      console.error(error)
+      ElMessage.error('上架失败')
     }
   }).catch(() => {})
 }
@@ -602,7 +602,7 @@ const fetchOrders = async () => {
     const url = currentTab.value === 'buy' ? '/api/order/myBuy' : '/api/order/mySell'
     orderList.value = await request.get(url)
   } catch (error) {
-    console.error(error)
+    ElMessage.error('获取订单列表失败')
   } finally {
     loading.value = false
   }
@@ -811,5 +811,24 @@ const cancelOrderBySeller = (order) => {
   background-color: var(--color-bg-input);
   color: #444;
   font-weight: 600;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 16px !important;
+  }
+  .side-menu {
+    width: 100% !important;
+    min-height: auto !important;
+  }
+  :deep(.el-col-4) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  :deep(.el-col-20) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 </style>

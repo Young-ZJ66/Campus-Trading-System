@@ -36,7 +36,7 @@
             @click="goToGoods(item.goodsId)"
           >
             <div class="image-wrapper">
-              <img v-if="getCoverImage(item.images)" :src="getCoverImage(item.images)" class="image" />
+              <img v-if="getCoverImage(item.images)" :src="getCoverImage(item.images)" class="image" loading="lazy" />
               <div v-else class="no-image">暂无图片</div>
               <div class="exchange-tag" v-if="item.isExchange === 1">支持换物</div>
             </div>
@@ -68,7 +68,7 @@
             @click="goToPointGoods(item.itemId)"
           >
             <div class="image-wrapper">
-              <img :src="getCoverImage(item.image)" class="image" />
+              <img :src="getCoverImage(item.image)" class="image" loading="lazy" />
             </div>
             <div class="goods-info">
               <h3 class="goods-title">{{ item.name }}</h3>
@@ -91,6 +91,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight, View, TrendCharts, Present, Coin } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import request from '../utils/request'
 import Navbar from '../components/Navbar.vue'
 import { formatTime } from '../utils/time'
@@ -119,7 +120,7 @@ const fetchNews = async () => {
     const res = await request.get('/api/news/list', { params: { pageNum: 1, pageSize: 3 } })
     newsList.value = res.list || []
   } catch (e) {
-    console.error(e)
+    ElMessage.error('获取资讯列表失败')
   } finally {
     newsLoading.value = false
   }
@@ -131,11 +132,11 @@ const fetchHotGoods = async () => {
     const res = await request.post('/api/goods/list', {
       pageNum: 1,
       pageSize: 4,
-      sortType: 2 
+      sortType: 2
     })
     hotGoodsList.value = res.list || []
   } catch (e) {
-    console.error(e)
+    ElMessage.error('获取热门商品失败')
   } finally {
     hotGoodsLoading.value = false
   }
@@ -145,10 +146,9 @@ const fetchPointGoods = async () => {
   pointGoodsLoading.value = true
   try {
     const res = await request.get('/api/point/goods')
-    
     pointGoodsList.value = (res || []).slice(0, 4)
   } catch (e) {
-    console.error(e)
+    ElMessage.error('获取积分商品失败')
   } finally {
     pointGoodsLoading.value = false
   }
