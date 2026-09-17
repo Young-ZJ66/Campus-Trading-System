@@ -9,10 +9,14 @@
 - **双交易通道**：支持直接使用系统模拟金额"普通购买"与以闲置交换的"以物换物"两种模式。
 - **并发安全锁定**：系统引入了"置换商品锁定机制"与乐观锁（CAS），防止一物多售；在同意、拒绝、买卖家取消或系统级联判定冲突时，状态机将自动释放商品状态。
 - **积分循环体系**：整合每日签到、交易完成加分等积分激励路径，用户可在"积分商城"换购专属的校园好礼。
+- **WebSocket 实时通知**：基于 STOMP 协议的实时推送，订单状态变更、新评论等事件即时通知相关用户。
+- **暗色模式**：完整的 CSS 变量暗色主题，支持一键切换明暗，Element Plus 组件全面适配。
+- **响应式布局**：移动端自适应，Navbar 汉堡菜单，各页面 768px 断点适配。
 - **Sa-Token 权限鉴权**：全面接入 Sa-Token 鉴权框架，实现优雅、无感的用户登录状态维护与动态管理员角色（Admin）鉴权拦截。
 - **BCrypt 密码加密**：用户密码使用 BCrypt + 随机盐值加密存储，安全性远超 MD5。
 - **统一设计令牌**：前端基于 CSS 变量的设计令牌体系，统一管理颜色、字体、阴影、圆角、过渡等视觉变量。
 - **独立后台系统**：内置完整的管理员端。包含可视化仪表盘、分类管理、资讯发布、全局用户管理和订单仲裁。
+- **Docker 一键部署**：提供 docker-compose 编排，MySQL + 后端 + 前端（Nginx）一键启动。
 
 ---
 
@@ -26,26 +30,48 @@
 - **密码加密**：BCrypt（Sa-Token 内置）
 - **参数校验**：JSR-303 Bean Validation（spring-boot-starter-validation）
 - **API 文档**：Knife4j 4.5（OpenAPI 3）
+- **实时通信**：Spring WebSocket + STOMP
+- **健康监控**：Spring Boot Actuator
+- **本地缓存**：Caffeine（分类缓存、登录限流、浏览量防刷）
 - **数据库**：MySQL 8.0+
 - **连接池**：HikariCP
+- **日志**：Logback（dev/prod 分离，文件轮转）
 
 ### 前端 (Frontend)
 
 - **核心框架**：Vue 3 (Composition API)
 - **构建工具**：Vite 8.x
 - **状态管理**：Pinia
-- **路由控制**：Vue Router 5.x
+- **路由控制**：Vue Router 5.x（NProgress 进度条 + 路由过渡动画）
 - **UI 组件库**：Element Plus
 - **图标系统**：@element-plus/icons-vue
-- **图表库**：ECharts 6
+- **图表库**：ECharts 6（动态导入，按需加载）
 - **网络请求**：Axios
-- **设计令牌**：CSS Custom Properties（全局变量体系）
+- **XSS 防护**：DOMPurify
+- **设计令牌**：CSS Custom Properties（全局变量 + 暗色主题）
 
 ---
 
 ## 快速开始
 
-### 1. 准备工作
+### 方式一：Docker 一键部署（推荐）
+
+确保已安装 **Docker** 和 **Docker Compose**，然后执行：
+
+```bash
+# 克隆项目
+git clone https://github.com/Young-ZJ66/Campus-Trading-System.git
+cd Campus-Trading-System
+
+# 一键启动（MySQL + 后端 + 前端）
+docker-compose up -d
+```
+
+启动成功后访问 `http://localhost` 即可。数据库密码可通过环境变量 `DB_PASSWORD` 自定义。
+
+### 方式二：本地开发
+
+#### 1. 准备工作
 
 请确保本地已安装：
 
@@ -53,7 +79,7 @@
 - **MySQL 8.0** 及以上
 - **Node.js 20.19+ / 22.12+** (建议使用 npm)
 
-### 2. 数据库配置
+#### 2. 数据库配置
 
 1. 创建数据库：
 
@@ -67,17 +93,25 @@
    mysql -uroot -p campus_trading < backend/src/main/resources/sql/schema.sql
    ```
 
-3. 修改 `backend/src/main/resources/application.yml` 中的数据库用户名与密码：
+3. 配置数据库凭据（二选一）：
+
+   **方式 A：环境变量（推荐）**
+
+   ```bash
+   export DB_USERNAME=您的MySQL用户名
+   export DB_PASSWORD=您的MySQL密码
+   ```
+
+   **方式 B：直接修改 `application.yml`**
 
    ```yaml
    spring:
      datasource:
-       url: jdbc:mysql://localhost:3306/campus_trading?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
        username: 您的MySQL用户名
        password: 您的MySQL密码
    ```
 
-### 3. 文件上传目录配置
+#### 3. 文件上传目录配置
 
 `backend/src/main/resources/application.yml` 中的 `file.upload-dir`：
 
@@ -91,7 +125,7 @@ file:
 - 默认值基于启动目录解析，请确保在 `backend` 目录下启动后端，否则图片上传与访问路径会错位。
 - 改为绝对路径后，可在任意目录启动。
 
-### 4. 后端启动
+#### 4. 后端启动
 
 ```bash
 cd backend
@@ -100,7 +134,7 @@ mvn spring-boot:run
 
 启动成功后，API 文档地址为 `http://localhost:8080/doc.html`。
 
-### 5. 前端启动
+#### 5. 前端启动
 
 ```bash
 cd front
@@ -133,33 +167,40 @@ npm run dev
 
 ```text
 ├── backend                         # 后端 Spring Boot 工程
+│   ├── Dockerfile                  # 后端 Docker 构建文件
 │   ├── src/main/java/com/campus/
 │   │   ├── common/                 # 通用工具（Result 封装、登录限流等）
-│   │   ├── config/                 # 配置类（WebConfig、拦截器、Sa-Token）
+│   │   ├── config/                 # 配置类（WebConfig、WebSocket、缓存、拦截器、Sa-Token）
 │   │   ├── controller/             # 控制器（用户端 + 管理端）
 │   │   ├── exception/              # 全局异常处理
 │   │   ├── mapper/                 # MyBatis Mapper 接口
-│   │   ├── pojo/                   # 实体类、DTO、枚举
-│   │   └── service/impl/          # 业务逻辑实现
+│   │   ├── pojo/                   # 实体类、DTO、枚举、Notification
+│   │   └── service/impl/          # 业务逻辑实现（含 NotificationService）
 │   ├── src/main/resources/
 │   │   ├── mapper/                 # MyBatis XML 映射文件
 │   │   ├── sql/schema.sql          # 数据库建表与初始化脚本
-│   │   └── application.yml         # 应用配置（支持环境变量）
+│   │   ├── application.yml         # 应用配置（支持环境变量）
+│   │   ├── application-prod.yml    # 生产环境配置
+│   │   └── logback-spring.xml      # 日志配置（dev/prod 分离）
 │   └── pom.xml                     # Maven 依赖配置
 ├── front                           # 前端 Vue 3 工程
+│   ├── Dockerfile                  # 前端 Docker 构建文件
+│   ├── nginx.conf                  # Nginx 反向代理配置
 │   ├── public/                     # 静态资源及 favicon
 │   ├── src/
 │   │   ├── assets/                 # 静态资源
-│   │   ├── components/             # 全局复用组件
-│   │   ├── views/                  # 核心页面（含 admin/ 子目录）
-│   │   ├── router/                 # 路由配置
+│   │   ├── components/             # 全局复用组件（Navbar、NotificationPanel、ErrorFallback 等）
+│   │   ├── composables/            # Vue Composables（useWebSocket、useTheme）
+│   │   ├── views/                  # 核心页面（含 admin/ 子目录、NotFound）
+│   │   ├── router/                 # 路由配置（meta.title、NProgress、过渡动画）
 │   │   ├── store/                  # Pinia 状态管理
 │   │   ├── utils/                  # 工具函数（request、image、time）
-│   │   └── style.css               # 全局设计令牌
+│   │   └── style.css               # 全局设计令牌（含暗色主题）
 │   ├── .env                        # 开发环境变量
 │   ├── .env.production             # 生产环境变量
 │   ├── package.json
 │   └── vite.config.js
+├── docker-compose.yml              # Docker Compose 编排（MySQL + 后端 + 前端）
 └── README.md
 ```
 
